@@ -354,7 +354,7 @@ def findPotentialIssues(File file, fileNumber) {
         }
         if (debug('PROPER NOUN NAMING') && !LINE_META.COMMENT && !LINE_META.DOCUMENTATION &&
                 line.trim().matches('^(.*\\w*[a-z0-9][A-Z]{3,}\\w*).*$')) {
-            printWarning(line, LINE_NUMBER, 'Please rename the variable containing acronym, e.g. getHTMLChar() -> getHtmlChar().')
+            printWarning(line, LINE_NUMBER, 'Please rename the variable containing acronym, e.g. getHTMLChar() -} getHtmlChar().')
         }
         if (debug('COMPARE WITH BOOLEAN LITERAL') && !LINE_META.COMMENT && !LINE_META.DOCUMENTATION &&
                 line.trim().matches('^.*(==\\s*(true|false)|(true|false)\\s*==|==\\s*Boolean.(TRUE|FALSE)|Boolean.(TRUE|FALSE)\\s*==).*$')) {

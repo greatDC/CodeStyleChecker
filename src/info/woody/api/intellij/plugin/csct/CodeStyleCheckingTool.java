@@ -12,6 +12,7 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckDetailFileData;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckReport;
+import org.apache.commons.lang.StringEscapeUtils;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
@@ -97,7 +98,7 @@ public class CodeStyleCheckingTool extends AnAction {
 
         report.getSummaryData().getFilesGroupByError().entrySet().stream().forEach(entry ->
             summaryReportBuilder
-                    .append("<br>").append(String.format("%d ERRORS FOR: <font color=yellow>%s</font>", entry.getValue().size(), entry.getKey()))
+                    .append("<br>").append(String.format("%d ERRORS FOR: <font color='yellow'>%s</font>", entry.getValue().size(), StringEscapeUtils.escapeHtml(entry.getKey())))
                     //.append("<br>").append(entry.getValue().stream().map(item -> item.replaceFirst("^.+[\\\\/]", "")).collect(Collectors.joining("<br>")))
         );
         summaryTextPane.setText(summaryReportBuilder.append("</pre>").toString());
