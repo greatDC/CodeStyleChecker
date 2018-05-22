@@ -87,7 +87,7 @@ public class CodeStyleCheckingTool extends AnAction {
         int lineErrorCount = report.getSummaryData().getLineErrorsGroupByFilePath().entrySet().stream().mapToInt(entry -> entry.getValue().size()).sum();
         String authors = report.getSummaryData().getAuthorsKeySet().stream()
                 //.sorted(author1, author2 -> report.getDetailDetailData().getMapAuthorsErrors().computeIfAbsent(author1, (v) -> 0))
-                .map(author -> String.format("<center><a href='%s'>%s</a> delivered %d errors</center>", author, author, report.getDetailDetailData().getMapAuthorsErrors().computeIfAbsent(author, (v) -> 0)))
+                .map(author -> String.format("<span style='text-align:center'><a href='%s'>%s</a> delivered %d errors</span>", author, author, report.getDetailDetailData().getMapAuthorsErrors().computeIfAbsent(author, (v) -> 0)))
                 .collect(Collectors.joining("<br>"));
         summaryReportBuilder
                 .append("<br>").append(String.format("Thanks for:<br>%s", authors))

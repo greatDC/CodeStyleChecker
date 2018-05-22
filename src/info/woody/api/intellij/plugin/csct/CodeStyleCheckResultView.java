@@ -22,7 +22,6 @@ public class CodeStyleCheckResultView implements ToolWindowFactory {
     private JPanel consolePanel;
     private JTextPane detailsTextPane;
     private JTextPane summaryTextPane;
-    private JComboBox authorComboBox;
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
@@ -33,7 +32,6 @@ public class CodeStyleCheckResultView implements ToolWindowFactory {
 
         setupTextPane("summaryTextPane", summaryTextPane);
         setupTextPane("detailsTextPane", detailsTextPane);
-        consolePanel.putClientProperty("authorComboBox", authorComboBox);
 
 //         summaryTextPane.setText("<h1>Welcome<h1><hr/><p>Welcome<br/>Welcome Welcome<br/>Welcome Welcome Welcome<br/>Welcome * Welcome<hr/><pre><a href='#'>Click Me</a></pre></p>");
         detailsTextPane.addHyperlinkListener(e -> {
