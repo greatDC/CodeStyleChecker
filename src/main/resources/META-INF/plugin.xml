@@ -1,5 +1,5 @@
 <idea-plugin>
-    <id>Code Style Check Tool</id>
+    <id>info.woody.api.intellij.plugin.csct.CodeStyleChecker</id>
     <name>Code Style Check Tool</name>
     <version>1.0</version>
     <vendor email="rcom10002@163.com" url="https://github.com/rcom10002/CodeStyleChecker">Woody</vendor>

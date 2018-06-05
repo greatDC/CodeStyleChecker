@@ -33,7 +33,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.joining;
 
 /**
- * https://www.jetbrains.org/intellij/sdk/docs/welcome.html
+ * This action will be triggered by the menu. The tutorial could be found at below link.
+ * <p>https://www.jetbrains.org/intellij/sdk/docs/welcome.html</p>
  *
  * @author Woody
  */
@@ -42,17 +43,18 @@ public class CodeStyleCheckingTool extends AnAction {
     public static final String SUMMARY_TEXT_PANE = "summaryTextPane";
     public static final String DETAILS_TEXT_PANE = "detailsTextPane";
     public static final String REPORT_INFO = "REPORT_INFO";
-    public static final String ACTION_ID_SAVE_ALL = "SaveAll";
+    private static final String ACTION_ID_SAVE_ALL = "SaveAll";
+    private static final String DEFAULT_CONFIGURATION_XML = "DefaultConfiguration.xml";
 
     @Override
     public void actionPerformed(AnActionEvent e) {
         if (false) {
             Optional<Module> module = Arrays.stream(ModuleManager.getInstance(e.getProject()).getModules())
-                    .filter(description -> "t-RetailAPI".equals(description.getName()) || "tRetailAPI".equals(description.getName())).findAny();
+                    .filter(description -> description.getName().matches("^t-?RetailAPI$")).findAny();
             if (!module.isPresent()) {
                 Messages.showMessageDialog("You don't have tRetailAPI module in this project yet.", "", Messages.getWarningIcon());
                 return;
-            } // don't check for a specific module
+            }
 
             Optional<ContentEntry> contentEntry = Arrays.stream(ModuleRootManager.getInstance(module.orElse(null)).getContentEntries())
                     .filter(entry -> entry.getFile().getPath().endsWith("tRetailAPI")).findAny();
@@ -68,7 +70,7 @@ public class CodeStyleCheckingTool extends AnAction {
         if (Files.notExists(configurationFilePath)) {
             int exitCode = Messages.showOkCancelDialog(
                     "You don't have tRetailApiCodeStyleCheckingTool.xml in project. Do you want to create one now?",
-                    "WARN", Messages.getWarningIcon());
+                    "", Messages.getWarningIcon());
             if (Messages.OK == exitCode) {
                 createDefaultConfigurationFile(configurationFilePath);
             } else {
@@ -124,7 +126,8 @@ public class CodeStyleCheckingTool extends AnAction {
         int fileCount = fileCountWithIssues + fileCountWithoutIssues;
         summaryReportBuilder
                 .append("<br>").append(String.format("Thanks for:<br>%s", authors))
-                .append("<br>").append(String.format("Totally %d issue(s) were found in %d file(s)", globalErrorCount + lineErrorCount, summaryData.getLineErrorsGroupByFilePath().size(), fileCount))
+                .append("<br>").append(String.format("Totally %d issue(s) were found in %d file(s)", globalErrorCount + lineErrorCount,
+                summaryData.getLineErrorsGroupByFilePath().size(), fileCount))
                 .append("<br>").append(String.format("Totally %d out of %d files were clear", fileCountWithoutIssues, fileCount))
                 .append("<br>").append(String.format("Cleanness rate is %f", (fileCountWithoutIssues + 0.0d) / (fileCount)))
                 .append("<hr>");
@@ -145,7 +148,7 @@ public class CodeStyleCheckingTool extends AnAction {
         try {
             File configurationFile = configurationFilePath.toFile();
             if (configurationFile.createNewFile()) {
-                InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream("DefaultConfiguration.xml");
+                InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream(DEFAULT_CONFIGURATION_XML);
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(resourceAsStream));
                 Files.write(configurationFilePath, bufferedReader.lines().collect(joining(LINE_SEPARATOR)).getBytes(UTF_8.name()));
                 Messages.showMessageDialog("Configuration file is successfully created. Please try again.",

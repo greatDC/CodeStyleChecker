@@ -11,7 +11,7 @@ import groovy.io.FileType
 
 /**
  *
- * http://www.oracle.com/technetwork/java/codeconvtoc-136057.html
+ * <p>http://www.oracle.com/technetwork/java/codeconvtoc-136057.html<p>
  *
  * @author Woody
  */
@@ -21,8 +21,8 @@ class CodeStyleCheckImpl {
 ConfigService.java
 """.replaceAll("(?i)[^a-z.\\n]", "").split("\\s*\\n\\s*") as List).findAll { return it.length() }
     public String FILENAME_PATTERN_TO_SKIP = '^.*(Controller).*$'
-/* below file list could be created by git command 'git diff --name-only branch1 branch2' */
-/* git diff --name-only HEAD origin/SPRINT_BOEING_727 | grep -e java$ -e groovy$ */
+/* below file list could be created by git command 'git diff --name-only branch1 branch2'. */
+/* Sample: "git diff --name-only HEAD origin/SPRINT_BOEING_727 | grep -e java$ -e groovy$". */
     public String GIT_FILES_TO_MERGE = '''
 src/main/java/com/openjaw/api/WebApplicationConfig.java
 '''
@@ -102,15 +102,16 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
             }
         }
         if (!AUTHORS) {
+            printGlobalWarning "AUTHOR CANNOT BE FOUND FOR CLASS."
             AUTHORS << "Anonymous"
         }
         if (content.matches('(?s)^.*(\\s*\\r?+\\n){3}.*$')) {
-            printGlobalWarning "MORE THAN ONE EMPTY LINE WERE FOUND"
+            printGlobalWarning "MORE THAN ONE EMPTY LINE WERE FOUND."
         }
         if (content.matches('(?s)^.*\\r?\\n\\s*\\r?\\n[}].*$')) {
-            printGlobalWarning "EMPTY LINE WAS FOUND AT THE END OF LAST METHOD DEFINITION"
+            printGlobalWarning "EMPTY LINE WAS FOUND AT THE END OF LAST METHOD DEFINITION."
         }
-        if (content.contains('final static')) {
+        if (lines.find { stripStringPattern(it).contains('final static') }) {
             printGlobalWarning '"static final", but not "final static"'
         }
         if (content.charAt(content.length() - 1) != '\n') {
@@ -119,7 +120,7 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
         if (!isTest && content.split("""\r?\n""").length > 500) {
             printGlobalWarning 'CLASS LINES ARE MORE THAN 500.'
         }
-        if (content.toLowerCase().contains(' todo ') || content.toLowerCase().contains(' fixme ')) {
+        if (content.toLowerCase().matches('(?i)^.*\\b(todo|fixme)\\b.*$')) {
             printGlobalWarning 'TODO/FIXME should be fixed ASAP.'
         }
         if (isTest) {
@@ -180,8 +181,8 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
                         printWarning(line, LINE_NUMBER, "Date format should be dd/mm/yyyy.")
                     }
                 } else if (!trimmedLine.replaceFirst('^[^*]*[*] ([^@]*((@param|@throws) \\w+|@return))?', '')
-                        .matches('^\\s*[0-9A-Z{].*[.:,;!?]$')) {
-                    printWarning(originLine, LINE_NUMBER, "Documentation should start with a capital letter and end with '.:,;!?'")
+                        .matches('^\\s*[0-9A-Z{].*[.:,;!?>]$')) {
+                    printWarning(originLine, LINE_NUMBER, "Documentation should start with a capital letter and end with '.:,;!?>'")
                 }
                 if (line.replaceAll('[{][^}]+[}]', '').replaceAll('(Chinese|International)', '')
                         .matches('^.*@\\w+\\s+\\w+\\s+.*[A-Z][a-z].*[A-Z][a-z].*$')) {
@@ -191,7 +192,7 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
                 }
             } else if (debug('SINGLE LINE COMMENT') && line.matches('^\\s*//.*$')) {
                 LINE_META.COMMENT = true
-                if (trimmedLine.matches('^\\s*//[^ ].+$')) {
+                if (trimmedLine.matches('^\\s*//+[^ ].+$')) {
                     printWarning(line, LINE_NUMBER, "The single line comment should be formatted as '// comment content'.")
                 }
             } else if (debug('SINGLE { IN A LINE') && line.matches('^\\s*[{]\\s*$')) {
@@ -215,12 +216,13 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
                     !line.matches('^.*\\b(class|interface|enum)\\b.*$')) {
                 LINE_META.FIELD = true
                 String fieldName = line.replaceAll('=.*$', '').trim().replaceAll('^.*\\b(\\w+)[\\s;]*$', '$1')
-                if (debug('UNUSED FIELD') && lines[index - 1].trim() != "@Mock" &&
-                        PROD_FILE_NAME.matches('^.+(Impl|Service|Validator|Mapper|Process|Util|Interceptor|Helper).*$') &&
-                        !trimmedLine.startsWith("public") &&
-                        (!(lines as List).subList(index + 1, lines.size() - 1).join('\n').matches('(?s)^.*\\b' + fieldName + '\\b.*$') // field never appears after declaration
+                String codesAfterConstructor = content.substring(content.indexOf("${fieldName} = ${fieldName}") + fieldName.length() * 2 + 3)
+                if (debug('UNUSED FIELD') && lines[index - 1].trim() != "@Mock"
+                        && PROD_FILE_NAME.matches('^.+(Impl|Service|Validator|Mapper|Process|Util|Interceptor|Helper).*$')
+                        && !trimmedLine.startsWith("public")
+                        && (!(lines as List).subList(index + 1, lines.size() - 1).join('\n').matches('(?s)^.*\\b' + fieldName + '\\b.*$') // field never appears after declaration
                                 || (content.contains("${fieldName} = ${fieldName}") && // don't check @Mock field
-                                !content.substring(content.indexOf("${fieldName} = ${fieldName}") + fieldName.length() * 2 + 3).matches('(?s)^.*\\b' + fieldName + '\\b.*$')))) {
+                                !codesAfterConstructor.matches('(?s)^.*\\b' + fieldName + '\\b.*$')))) {
                     printWarning(line, LINE_NUMBER, "You have unused field declaration")
                 }
                 if (debug('PRIVATE FIELD') && isTest && line.contains("protected ")) {
@@ -275,6 +277,13 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
                         !content.replaceFirst('\\b' + methodName + '\\b', '').contains(methodName)) {
                     printWarning(line, LINE_NUMBER, "This method is never used.")
                 }
+            } else if (debug('METHOD') && trimmedLine.matches("^.*${PROD_FILE_NAME.replaceFirst('[.].*$', '')}[(]")) {
+                LINE_META.CONSTRUCTOR = true
+                if (LINE_NUMBER > 3) {
+                    if (!lines[index - 2].contains("*")) {
+                        printWarning(line, LINE_NUMBER, "Do you have documentation for this method?")
+                    }
+                }
             }
             if (debug('LITERAL') && !LINE_META.FIELD && !isTest && trimmedLineLength // exclude the field declaration
                     && !(PROD_FILE_NAME.contains('RequestService')
@@ -303,7 +312,7 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
             if (debug('REQUESTPROPERTIES') && trimmedSecureLine.contains('"requestProperties"')) {
                 printWarning(line, LINE_NUMBER, '"requestProperties" could be replaced by RequestParameters.REQUESTPROPERTIES.')
             }
-            if (trimmedLine.startsWith("def ")) {
+            if (trimmedSecureLine.startsWith("def ")) {
                 printWarning(line, LINE_NUMBER, "Remove 'def' and use an explicit type.")
             }
             if (!LINE_META.COMMENT && !LINE_META.DOCUMENTATION && trimmedSecureLine.matches('^.*\\bprint(ln)?\\b.+$')) {
@@ -312,9 +321,6 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
             if (140 < lineLength && lineLength < 234 && !PROD_FILE_NAME.contains("Controller.java") &&
                     lineLength - secureLine.length() < 100) {
                 printWarning(line, LINE_NUMBER, "This line exceeds 140 chars")
-            }
-            if (trimmedLine == ')' && lines[index - 1].trim() == '}') {
-                printWarning(line, LINE_NUMBER, "Could previous line and this line be merged???")
             }
             if (debug('MERGE LINES') && !isTest && index > 1 && lines[index - 1].trim().length() > 0 && trimmedLineLength > 0 &&
                     (!line.matches('^.*\\b(public|protected|private)\\b.*$') &&
@@ -327,6 +333,7 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
                             !line.endsWith("}") && !lines[index - 1].endsWith("}") && // end curly brace
                             !lines[index - 1].endsWith(":") && // colon
                             !line.matches('^\\s+break;?$') && // break statement
+                            trimmedLine != "'''" && // Groovy multiline string
                             !lines[index - 1].trim().endsWith('->') && // Groovy's closure
                             !lines[index - 1].trim().contains('<<') && // Groovy's list operation
                             !lines[index - 1].trim().endsWith('++') && // Groovy's ++
@@ -344,7 +351,8 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
             if (debug('ENUM IMPORTING') && !LINE_META.FIELD && !LINE_META.COMMENT && !LINE_META.DOCUMENTATION &&
                     secureLine.matches('^.*\\b[A-Z]\\w+[.]\\w+Enum.*$') && !line.contains("import ")) {
                 printWarning(line, LINE_NUMBER, "Import enum type directly, e.g GenderEnum.MALE. Don't forget to clear useless import.")
-            } else if (debug('IDENTICAL EXPRESSIONS') && !isTest && index > 5 && index + 5 < totalLineCount) {
+            }
+            if (debug('IDENTICAL EXPRESSIONS') && !isTest && index > 5 && index + 5 < totalLineCount) {
                 String contextLines = ""
                 ((index)..(index + 5)).each {
                     contextLines += lines[it] + " "
@@ -356,14 +364,15 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
                     }
                 }
             }
-            if (debug('FOR STATEMENT OPTIMISATION') && trimmedSecureLine.contains('for') &&
+            if (debug('FOR STATEMENT') && !LINE_META.COMMENT && !LINE_META.DOCUMENTATION && trimmedSecureLine.contains('for') &&
                     (trimmedSecureLine.contains('.length') || trimmedSecureLine.contains('.size()'))) {
                 printWarning(line, LINE_NUMBER, "Please extract a variable to store the value of length/size.")
             }
             if (debug('LINE MOVE UPPER') && line.replaceAll('\\s', '').matches('^[(){]{2,}$')) {
                 printWarning(line, LINE_NUMBER, "Could this line be moved upper?")
             }
-            if (debug('SEMICOLON IN GROOVY') && PROD_FILE_NAME.endsWith('groovy') && trimmedLine.endsWith(';')) {
+            if (debug('SEMICOLON IN GROOVY') && !LINE_META.COMMENT && !LINE_META.DOCUMENTATION
+                    && PROD_FILE_NAME.endsWith('groovy') && trimmedLine.endsWith(';')) {
                 printWarning(line, LINE_NUMBER, "Semicolon could be removed in Groovy.")
             }
             if (debug('GROOVY PUBLIC') && PROD_FILE_NAME.endsWith('.groovy') && line.matches('^.*public\\s+\\w+\\s+\\w+\\s*[(].*[)].*$')) {
@@ -374,8 +383,12 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
                 printWarning(line, LINE_NUMBER, 'Please rename the variable containing acronym, e.g. getHTMLChar() -} getHtmlChar().')
             }
             if (debug('COMPARE WITH BOOLEAN LITERAL') && !LINE_META.COMMENT && !LINE_META.DOCUMENTATION &&
-                    trimmedLine.matches('^.*(==\\s*(true|false)|(true|false)\\s*==|==\\s*Boolean.(TRUE|FALSE)|Boolean.(TRUE|FALSE)\\s*==).*$')) {
+                    trimmedSecureLine.matches('^.*(==\\s*(true|false)|(true|false)\\s*==|==\\s*Boolean.(TRUE|FALSE)|Boolean.(TRUE|FALSE)\\s*==).*$')) {
                 printWarning(line, LINE_NUMBER, 'Never compare with Boolean literal!')
+            }
+            if (debug('CATCH CLAUSE') && LINE_NUMBER > 8 && stripStringPattern(lines[index - 1].trim()).split('\\W+').contains('catch')
+                    && !trimmedSecureLine.matches('^LOGGER.error[(][^,]+[)].*$')) {
+                printWarning(line, LINE_NUMBER, "Could this line be moved upper?")
             }
         }
 //    printFileResult()
@@ -589,12 +602,13 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
 }
 
 // NEW FEATURES
-// Documentation is missing for class constructor
-// LOGGER the exception from catch clause
-// Format well check should strip string literal first
-// getHTMLChar check should strip string literal first
-// print check should check word only: exclude __print
-// static final check should happen as line check
-// don't check unit test if the package name ends with "bean" or "model"
-// Detect the codes commented out
-// Class should has authors
+// DONE - Documentation is missing for class constructor
+// DONE - LOGGER the exception from catch clause
+// DONE - Format well check should strip string literal first
+// DONE - getHTMLChar check should strip string literal first
+// DONE - print check should check word only: exclude __print
+// IN PLAN - static final check should happen as line check
+// IN PLAN - don't check unit test if the package name ends with "bean" or "model"
+// IN PLAN - Detect the codes commented out
+// DONE - Class should has authors
+//
