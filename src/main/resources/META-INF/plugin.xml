@@ -1,0 +1,44 @@
+<idea-plugin>
+    <id>Code Style Check Tool</id>
+    <name>Code Style Check Tool</name>
+    <version>1.0</version>
+    <vendor email="rcom10002@163.com" url="https://github.com/rcom10002/CodeStyleChecker">Woody</vendor>
+
+    <description><![CDATA[
+      This plugin is used for code style checking. It could report code smells in your source files.
+      If you want to add more customization please contact me, or checkout the <em>CodeStyleChecker</em> project on github.
+      <p>Note: this plugin scans the file content based on the text, but no any AST technologies are used. If some issues
+      were reported inaccurately, please ignore it or leave a comment. Thanks.</p>
+    ]]></description>
+
+    <change-notes><![CDATA[
+      <p>2018.06 - Initial version for release. Please contact me if any issues.</p>
+    ]]>
+    </change-notes>
+
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+    <idea-version since-build="173.0"/>
+
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+    <!-- uncomment to enable plugin in all products
+    <depends>com.intellij.modules.lang</depends>
+    -->
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Add your extensions here -->
+        <toolWindow id="Code scanning results" anchor="bottom"
+                    factoryClass="info.woody.api.intellij.plugin.csct.CodeStyleCheckResultView"
+                    icon="/csct.png"></toolWindow>
+    </extensions>
+
+    <actions>
+        <!-- Add your actions here -->
+        <action id="CodeStyleCheckingTool"
+                class="info.woody.api.intellij.plugin.csct.CodeStyleCheckingTool"
+                text="Code Style Check Tool" description="Code Style Check Tool">
+            <add-to-group group-id="AnalyzeMenu" anchor="first"/>
+        </action>
+    </actions>
+
+</idea-plugin>
