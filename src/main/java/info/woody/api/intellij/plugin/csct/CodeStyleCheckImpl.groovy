@@ -11,7 +11,7 @@ import groovy.io.FileType
 
 /**
  *
- * <p>http://www.oracle.com/technetwork/java/codeconvtoc-136057.html<p>
+ * <p>http://www.oracle.com/technetwork/java/codeconvtoc-136057.html</p>
  *
  * @author Woody
  */
@@ -194,6 +194,9 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
                             "Only first letter is allowed to be a capital unless it's a proper noun. ".concat(
                                     "Please try to use {@link ...} or {@code ...} if it refers to code."))
                 }
+                if (lines == "/*" && !lines[index + 1].trim().replaceFirst('^[*]', '').trim().matches('^\\w+.*$')) {
+                    printWarning(originLine, LINE_NUMBER, "No descriptions were found for the documentation.")
+                }
             } else if (debug('SINGLE LINE COMMENT') && line.matches('^\\s*//.*$')) {
                 LINE_META.COMMENT = true
                 if (trimmedLine.matches('^.*\\b(\\w+[.]\\w+[(]|\\w+ ?= ?\\w+[.]\\w+|if ?[(]|\\w+[(][)]).*$')) {
@@ -252,6 +255,9 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
                 if (debug('CHECK LOGGER') && line.contains(" logger ")) {
                     printWarning(line, LINE_NUMBER, "Please use LOGGER.")
                 }
+                if (debug('CHECK LOGGER') && line.toUpperCase().contains(" LOGGER ") && !line.contains(PROD_FILE_NAME.replaceFirst('[.]\\w+$', ''))) {
+                    printWarning(line, LINE_NUMBER, "LOGGER's target class should be this class.")
+                }
                 if (debug('STATIC') && line.contains(" static ")) {
                     if (!line.contains(" final ")) {
                         printWarning(line, LINE_NUMBER, "Do you miss the keyword 'final' or have redundant keyword 'static'?")
@@ -271,7 +277,7 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
                 if (!(lines as List).subList(0, index).any { it.trim().startsWith("*") }) {
                     printWarning(line, LINE_NUMBER, "Do you have documentation for this class/interface/enum?")
                 }
-            } else if (debug('METHOD') && trimmedLine.matches('^[^}{]*\\w+(\\W{2}|<[^>]+>)? [_a-z]\\w+[(].+[{]$')) {
+            } else if (debug('METHOD') && trimmedSecureLine.matches('^[^}{]*\\w+(\\W{2}|<[^>]+>)? [_a-z]\\w+[(].+[{]$')) {
                 LINE_META.METHOD = true
                 if (LINE_NUMBER > 3) {
                     if (!lines[index - 1].contains("@Override") && !lines[index - 2].contains("*")) {
@@ -283,13 +289,16 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
                         !content.replaceFirst('\\b' + methodName + '\\b', '').contains(methodName)) {
                     printWarning(line, LINE_NUMBER, "This method is never used.")
                 }
-            } else if (debug('METHOD') && trimmedLine.matches("^.*${PROD_FILE_NAME.replaceFirst('[.].*$', '')}[(]")) {
+            } else if (debug('CONSTRUCTOR') && trimmedLine.matches("^.*${PROD_FILE_NAME.replaceFirst('[.].*$', '')}[(]")) {
                 LINE_META.CONSTRUCTOR = true
                 if (LINE_NUMBER > 3) {
                     if (!lines[index - 2].contains("*")) {
                         printWarning(line, LINE_NUMBER, "Do you have documentation for this constructor?")
                     }
                 }
+            } else if (isTest && ((PROD_FILE_NAME.endsWith('java') && trimmedSecureLine.split('\\W').contains('assert')) ||
+                    (PROD_FILE_NAME.endsWith('groovy') && trimmedSecureLine.split('\\W').contains('Assert')))) {
+                printWarning(line, LINE_NUMBER, "To get more details, please use <Assert> for Java test and <assert> for Groovy test.")
             }
             if (debug('LITERAL') && !LINE_META.FIELD && !isTest && trimmedLineLength // exclude the field declaration
                     && !(PROD_FILE_NAME.contains('RequestService')
@@ -340,6 +349,7 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
                             !lines[index - 1].endsWith(":") && // colon
                             !line.matches('^\\s+break;?$') && // break statement
                             trimmedLine != "'''" && // Groovy multiline string
+                            !trimmedLine.contains(' << ') && // Groovy's List.add(e)
                             !lines[index - 1].trim().endsWith('->') && // Groovy's closure
                             !lines[index - 1].trim().contains('<<') && // Groovy's list operation
                             !lines[index - 1].trim().endsWith('++') && // Groovy's ++
@@ -628,12 +638,12 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
 // DONE - print check should check word only: exclude __print
 // IN PLAN - static final check should happen as line check
 // IN PLAN - don't check unit test if the package name ends with "bean" or "model"
-// IN PLAN - Detect the codes commented out
+// DONE - Detect the codes commented out
 // DONE - Class should has authors
-// Add new check for assert / Assert
-// No documentation content for method
+// WIP - Add new check for assert / Assert
+// WIP - No documentation content for method
 // Empty line should exist between documentation description and @param, @return, @exception
-// The class for LOGGER should be same as the current class
+// WIP - The class for LOGGER should be same as the current class
 // static should come before non-static
 //
 

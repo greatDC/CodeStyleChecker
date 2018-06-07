@@ -1,6 +1,10 @@
 package info.woody.api.intellij.plugin.csct.bean
 
-import static info.woody.api.intellij.plugin.csct.util.RichTextMaker.*
+import static info.woody.api.intellij.plugin.csct.util.RichTextMaker.escapeArgs
+import static info.woody.api.intellij.plugin.csct.util.RichTextMaker.escapeContent
+import static info.woody.api.intellij.plugin.csct.util.RichTextMaker.newHighlight
+import static info.woody.api.intellij.plugin.csct.util.RichTextMaker.newLink
+
 
 /**
  * File detail info.

@@ -14,7 +14,7 @@ plugins {
 }
 
 group 'info.woody'
-version '0.1.1'
+version '0.1.2'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -36,7 +36,9 @@ intellij {
     version '2018.1.3'
     pluginName 'code-style-check-tool'
 } // https://github.com/JetBrains/gradle-intellij-plugin#configuration
+
 publishPlugin {
-    username '******'
-    password '******'
+    username 'zhengwei.ren@company.com'
+    password 'password'
+    channels 'alpha'
 }

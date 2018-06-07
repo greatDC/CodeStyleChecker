@@ -15,7 +15,8 @@ import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckReport;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckSummaryData;
 import org.apache.commons.lang.StringEscapeUtils;
 
-import javax.swing.*;
+import javax.swing.JComponent;
+import javax.swing.JTextPane;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;

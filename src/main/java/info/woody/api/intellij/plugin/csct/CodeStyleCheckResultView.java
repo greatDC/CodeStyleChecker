@@ -16,7 +16,9 @@ import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckDetailFileData;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckReport;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
+import javax.swing.JEditorPane;
+import javax.swing.JPanel;
+import javax.swing.JTextPane;
 import javax.swing.event.HyperlinkEvent;
 import java.nio.file.Paths;
 import java.util.stream.Collectors;
