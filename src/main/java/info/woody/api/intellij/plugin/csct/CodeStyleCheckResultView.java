@@ -56,15 +56,16 @@ public class CodeStyleCheckResultView implements ToolWindowFactory {
                 if (providers.length > 0) {
                     OpenFileDescriptor openFileDescriptor = new OpenFileDescriptor(project, virtualFile);
                     Editor editor = FileEditorManager.getInstance(project).openTextEditor(openFileDescriptor, false);
-                    // PropertiesComponent.getInstance().
-//                    CaretModel caretModel = editor.getCaretModel();
-//
-//                    String text = summaryTextPane.getText();
-//                    int fromIndex = text.indexOf(description);
-//                    int caretPos = text.indexOf(description.replaceAll("^.*[\\\\/]", ""), fromIndex + description.length());
-//                    summaryTextPane.setCaretPosition(caretPos);
-                    // caretModel.moveToLogicalPosition(new LogicalPosition(lineNumber -1, 0));
-                    // editor.getScrollingModel().scrollToCaret(ScrollType.CENTER);
+                    /*
+                    PropertiesComponent.getInstance().
+                    CaretModel caretModel = editor.getCaretModel();
+                    String text = summaryTextPane.getText();
+                    int fromIndex = text.indexOf(description);
+                    int caretPos = text.indexOf(description.replaceAll("^.*[\\\\/]", ""), fromIndex + description.length());
+                    summaryTextPane.setCaretPositionPosition(caretPos);
+                    caretModel.moveToLogicalPosition(new LogicalPosition(lineNumber -1, 0));
+                    editor.getScrollingModel().scrollToCaret(ScrollType.CENTER);
+                    */
                 }
             }
         });

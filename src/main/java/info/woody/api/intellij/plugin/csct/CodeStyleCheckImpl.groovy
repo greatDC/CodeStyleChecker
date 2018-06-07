@@ -45,6 +45,7 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
     private Map LINE_META
     private List AUTHORS
     private StringBuilder outputBuilder = new StringBuilder(9999)
+    private boolean ENABLE_CONSOLE_REPORT = false
 
     /**
      * Check the code smells.
@@ -66,6 +67,9 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
         }
         TARGET_FILES.eachWithIndex { File file, int index ->
             findPotentialIssues(file, index + 1)
+        }
+        if (ENABLE_CONSOLE_REPORT) {
+            printGlobalResult()
         }
         this
     }
@@ -170,7 +174,7 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
                 return
             }
 
-            if (debug('DOCUMENTATION') && trimmedLine.matches('^\\s*+/?[*].*$')) {
+            if (debug('DOCUMENTATION') && trimmedLine.matches('^/?[*].*$')) {
                 LINE_META.DOCUMENTATION = true
                 String originLine = line
                 line = trimmedLine.replaceAll("<[^>]+>", "")
@@ -192,7 +196,9 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
                 }
             } else if (debug('SINGLE LINE COMMENT') && line.matches('^\\s*//.*$')) {
                 LINE_META.COMMENT = true
-                if (trimmedLine.matches('^\\s*//+[^ ].+$')) {
+                if (trimmedLine.matches('^.*\\b(\\w+[.]\\w+[(]|\\w+ ?= ?\\w+[.]\\w+|if ?[(]|\\w+[(][)]).*$')) {
+                    printWarning(line, LINE_NUMBER, "The commented out codes should be removed.")
+                } else if (trimmedLine.matches('^\\s*//+[^ ].+$')) {
                     printWarning(line, LINE_NUMBER, "The single line comment should be formatted as '// comment content'.")
                 }
             } else if (debug('SINGLE { IN A LINE') && line.matches('^\\s*[{]\\s*$')) {
@@ -265,7 +271,7 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
                 if (!(lines as List).subList(0, index).any { it.trim().startsWith("*") }) {
                     printWarning(line, LINE_NUMBER, "Do you have documentation for this class/interface/enum?")
                 }
-            } else if (debug('METHOD') && trimmedLine.matches('^.*\\w+(\\W{2}|<[^>]+>)? [_a-z]\\w+[(].+[{]$')) {
+            } else if (debug('METHOD') && trimmedLine.matches('^[^}{]*\\w+(\\W{2}|<[^>]+>)? [_a-z]\\w+[(].+[{]$')) {
                 LINE_META.METHOD = true
                 if (LINE_NUMBER > 3) {
                     if (!lines[index - 1].contains("@Override") && !lines[index - 2].contains("*")) {
@@ -281,7 +287,7 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
                 LINE_META.CONSTRUCTOR = true
                 if (LINE_NUMBER > 3) {
                     if (!lines[index - 2].contains("*")) {
-                        printWarning(line, LINE_NUMBER, "Do you have documentation for this method?")
+                        printWarning(line, LINE_NUMBER, "Do you have documentation for this constructor?")
                     }
                 }
             }
@@ -340,6 +346,7 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
                             !lines[index - 1].trim().endsWith(')') && // Groovy's method invocation
                             (!lines[index - 1].contains(":") && !line.contains(":")) && // Groovy's map
                             !trimmedLine.startsWith(".") && // method of pipeline pattern
+                            !trimmedLine.startsWith("if") && // if statement
                             !line.contains("import ") && !lines[index - 1].contains("import ") && // import statement
                             !line.contains(" = ") && !lines[index - 1].contains(" = ") && // assignment statement
                             !line.matches('^.*[\\w<>]+ \\w+.*$') // skip method parameter declaration
@@ -368,7 +375,8 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
                     (trimmedSecureLine.contains('.length') || trimmedSecureLine.contains('.size()'))) {
                 printWarning(line, LINE_NUMBER, "Please extract a variable to store the value of length/size.")
             }
-            if (debug('LINE MOVE UPPER') && line.replaceAll('\\s', '').matches('^[(){]{2,}$')) {
+            if (debug('LINE MOVE UPPER') && !LINE_META.COMMENT && !LINE_META.DOCUMENTATION &&
+                    line.replaceAll('\\s', '').matches('^[(){]{2,}$')) {
                 printWarning(line, LINE_NUMBER, "Could this line be moved upper?")
             }
             if (debug('SEMICOLON IN GROOVY') && !LINE_META.COMMENT && !LINE_META.DOCUMENTATION
@@ -386,12 +394,15 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
                     trimmedSecureLine.matches('^.*(==\\s*(true|false)|(true|false)\\s*==|==\\s*Boolean.(TRUE|FALSE)|Boolean.(TRUE|FALSE)\\s*==).*$')) {
                 printWarning(line, LINE_NUMBER, 'Never compare with Boolean literal!')
             }
-            if (debug('CATCH CLAUSE') && LINE_NUMBER > 8 && stripStringPattern(lines[index - 1].trim()).split('\\W+').contains('catch')
+            if (debug('CATCH CLAUSE') && LINE_NUMBER > 8 && !LINE_META.COMMENT && !LINE_META.DOCUMENTATION
+                    && stripStringPattern(lines[index - 1].trim()).split('\\W+').contains('catch')
                     && !trimmedSecureLine.matches('^LOGGER.error[(][^,]+[)].*$')) {
-                printWarning(line, LINE_NUMBER, "Could this line be moved upper?")
+                printWarning(line, LINE_NUMBER, "Please log the error here. e.g. LOGGER.error(message, e)")
             }
         }
-//    printFileResult()
+        if (ENABLE_CONSOLE_REPORT) {
+            printFileResult()
+        }
     }
 
     /**
@@ -402,15 +413,16 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
      */
     void printGlobalWarning(String error, String... args) {
         FILE_ISSUE_COUNT++
-//    __println error
-//    if (STATISTICS_TYPE_REPORT[error]) STATISTICS_TYPE_REPORT[error] += 1
-//    else STATISTICS_TYPE_REPORT[error] = 1
-//    if (STATISTICS_FILE_REPORT[PROD_FILE_NAME]) {
-//        STATISTICS_FILE_REPORT[PROD_FILE_NAME]['ERRORS'] += 1
-//    } else {
-//        STATISTICS_FILE_REPORT[PROD_FILE_NAME] = [AUTHORS: AUTHORS, PROD_FILE_ABSOLUTE_PATH: PROD_FILE_ABSOLUTE_PATH, ERRORS: 1]
-//    }
-
+        if (ENABLE_CONSOLE_REPORT) {
+            __println error
+            if (STATISTICS_TYPE_REPORT[error]) STATISTICS_TYPE_REPORT[error] += 1
+            else STATISTICS_TYPE_REPORT[error] = 1
+            if (STATISTICS_FILE_REPORT[PROD_FILE_NAME]) {
+                STATISTICS_FILE_REPORT[PROD_FILE_NAME]['ERRORS'] += 1
+            } else {
+                STATISTICS_FILE_REPORT[PROD_FILE_NAME] = [AUTHORS: AUTHORS, PROD_FILE_ABSOLUTE_PATH: PROD_FILE_ABSOLUTE_PATH, ERRORS: 1]
+            }
+        }
         // statistics all in one
         ALL_ISSUE_COUNT++
         if (STATISTICS_ALL_IN_ONE[PROD_FILE_ABSOLUTE_PATH]) {
@@ -436,15 +448,16 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
      */
     void printWarning(String line, int lineNumber, String error, String... args) {
         FILE_ISSUE_COUNT++
-//    __println String.valueOf(lineNumber).padRight(5).concat(line).concat("\t&lt;===\t${error}")
-//    if (STATISTICS_TYPE_REPORT[error]) STATISTICS_TYPE_REPORT[error] += 1
-//    else STATISTICS_TYPE_REPORT[error] = 1
-//    if (STATISTICS_FILE_REPORT[PROD_FILE_NAME]) {
-//        STATISTICS_FILE_REPORT[PROD_FILE_NAME]['ERRORS'] += 1
-//    } else {
-//        STATISTICS_FILE_REPORT[PROD_FILE_NAME] = [AUTHORS: AUTHORS, PROD_FILE_ABSOLUTE_PATH: PROD_FILE_ABSOLUTE_PATH, ERRORS: 1]
-//    }
-
+        if (ENABLE_CONSOLE_REPORT) {
+            __println String.valueOf(lineNumber).padRight(5).concat(line).concat("\t&lt;===\t${error}")
+            if (STATISTICS_TYPE_REPORT[error]) STATISTICS_TYPE_REPORT[error] += 1
+            else STATISTICS_TYPE_REPORT[error] = 1
+            if (STATISTICS_FILE_REPORT[PROD_FILE_NAME]) {
+                STATISTICS_FILE_REPORT[PROD_FILE_NAME]['ERRORS'] += 1
+            } else {
+                STATISTICS_FILE_REPORT[PROD_FILE_NAME] = [AUTHORS: AUTHORS, PROD_FILE_ABSOLUTE_PATH: PROD_FILE_ABSOLUTE_PATH, ERRORS: 1]
+            }
+        }
         // statistics all in one
         ALL_ISSUE_COUNT++
         if (STATISTICS_ALL_IN_ONE[PROD_FILE_ABSOLUTE_PATH]) {
@@ -521,42 +534,48 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
         report
     }
 
-//void printFileResult() {
-//    __println "-" * 50
-//    if (0 == FILE_ISSUE_COUNT) {
-//        __print "Well done :)\t\t\t"
-//    } else {
-//        __print "Oops T_T\t\t\t"
-//    }
-//    __println "FILE_ISSUE_COUNT: ${FILE_ISSUE_COUNT}"
-//}
-//
-//void printGlobalResult() {
-//    __println "\n" * 5
-//    __println "-" * 50
-//    __println "TOTAL FILES: ${TARGET_FILES.size()}, ALL FOUND ISSUES: ${ALL_ISSUE_COUNT}"
-//    __println "-" * 50
-//    STATISTICS_TYPE_REPORT.sort { 0 - it.value }.each { __println "${it.value.toString().padLeft(3)} errors for [${it.key}]" }
-//    __println()
-////    Map<String, Map<String, Object>> ranking = [:]
-////    STATISTICS_FILE_REPORT.each {
-////        String authors = it.value['AUTHORS'].sort { it.toString() }
-////        if (ranking[authors]) {
-////            ranking[authors]['ERRORS'] += it.value['ERRORS']
-////            ranking[authors]['FILES'] << it.key
-////        } else {
-////            ranking[authors] = [ERRORS: it.value['ERRORS'], FILES: [it.key]]
-////        }
-////    }
-////    ranking.sort { 0 - it.value['ERRORS'] }.each {
-////        __println "-" * 50
-////        __println "${it.key} delivered ${it.value['ERRORS']} code smell(s) in below files:"
-////        __println "-" * 50
-////        it.value['FILES'].each { __println it }
-////        __println()
-////    }
-////    null
-//}
+    /**
+     * Print file summary.
+     */
+    void printFileResult() {
+        __println "-" * 50
+        if (0 == FILE_ISSUE_COUNT) {
+            __print "Well done :)\t\t\t"
+        } else {
+            __print "Oops T_T\t\t\t"
+        }
+        __println "FILE_ISSUE_COUNT: ${FILE_ISSUE_COUNT}"
+    }
+
+    /**
+     * Print report summary.
+     */
+    void printGlobalResult() {
+        __println "\n" * 5
+        __println "-" * 50
+        __println "TOTAL FILES: ${TARGET_FILES.size()}, ALL FOUND ISSUES: ${ALL_ISSUE_COUNT}"
+        __println "-" * 50
+        STATISTICS_TYPE_REPORT.sort { 0 - it.value }.each { __println "${it.value.toString().padLeft(3)} errors for [${it.key}]" }
+        __println()
+        Map<String, Map<String, Object>> ranking = [:]
+        STATISTICS_FILE_REPORT.each {
+            String authors = it.value['AUTHORS'].sort { it.toString() }
+            if (ranking[authors]) {
+                ranking[authors]['ERRORS'] += it.value['ERRORS']
+                ranking[authors]['FILES'] << it.key
+            } else {
+                ranking[authors] = [ERRORS: it.value['ERRORS'], FILES: [it.key]]
+            }
+        }
+        ranking.sort { 0 - it.value['ERRORS'] }.each {
+            __println "-" * 50
+            __println "${it.key} delivered ${it.value['ERRORS']} code smell(s) in below files:"
+            __println "-" * 50
+            it.value['FILES'].each { __println it }
+            __println()
+        }
+        null
+    }
 
     /**
      * Replace all string literals with empty string.
@@ -611,4 +630,10 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
 // IN PLAN - don't check unit test if the package name ends with "bean" or "model"
 // IN PLAN - Detect the codes commented out
 // DONE - Class should has authors
+// Add new check for assert / Assert
+// No documentation content for method
+// Empty line should exist between documentation description and @param, @return, @exception
+// The class for LOGGER should be same as the current class
+// static should come before non-static
 //
+
