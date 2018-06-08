@@ -28,7 +28,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <!-- Add your extensions here -->
         <toolWindow id="Code scanning results" anchor="bottom"
-                    factoryClass="info.woody.api.intellij.plugin.csct.CodeStyleCheckResultView"
+                    factoryClass="info.woody.api.intellij.plugin.csct.CodeStyleCheckToolWindowFactory"
                     icon="/csct.png"></toolWindow>
     </extensions>
 

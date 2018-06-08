@@ -8,13 +8,8 @@ import com.intellij.openapi.fileEditor.ex.FileEditorProviderManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.openapi.wm.ToolWindowFactory;
-import com.intellij.ui.content.Content;
-import com.intellij.ui.content.ContentFactory;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckDetailFileData;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckReport;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
@@ -32,18 +27,23 @@ import static info.woody.api.intellij.plugin.csct.CodeStyleCheckingTool.SUMMARY_
  *
  * @author Woody
  */
-public class CodeStyleCheckResultView implements ToolWindowFactory {
+public class CodeStyleCheckResultView {
     private JPanel consolePanel;
     private JTextPane detailsTextPane;
     private JTextPane summaryTextPane;
 
-    @Override
-    public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-        ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+    private Project project;
 
-        Content content = contentFactory.createContent(consolePanel, "", false);
-        toolWindow.getContentManager().addContent(content);
+    CodeStyleCheckResultView(Project project) {
+        this.project = project;
+        this.init();
+    }
 
+    public JPanel getPanel() {
+        return this.consolePanel;
+    }
+
+    private void init() {
         setupTextPane(SUMMARY_TEXT_PANE, summaryTextPane);
         setupTextPane(DETAILS_TEXT_PANE, detailsTextPane);
 
