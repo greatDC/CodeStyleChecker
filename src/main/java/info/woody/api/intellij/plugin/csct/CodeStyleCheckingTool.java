@@ -157,7 +157,7 @@ public class CodeStyleCheckingTool extends AnAction {
             } else {
                 Messages.showMessageDialog("Configuration file is failed to create.", "", Messages.getErrorIcon());
             }
-        } catch (IOException e1) {
+        } catch (IOException e) {
             Messages.showMessageDialog("Configuration file is failed to create.", "", Messages.getErrorIcon());
         }
     }

@@ -1,0 +1,72 @@
+package info.woody.api.intellij.plugin.csct.bean;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Error messages.
+ *
+ * @author Woody
+ * @since 14/06/2018
+ */
+public class CodeStyleCheckIssues {
+
+    public static final String GLOBAL_NO_AUTHORS = "AUTHOR CANNOT BE FOUND FOR CLASS.";
+    public static final String GLOBAL_CONSECUTIVE_EMPTY_LINES = "CONSECUTIVE EMPTY LINES WERE FOUND.";
+    public static final String GLOBAL_LAST_METHOD_HAS_TAILING_EMPTY_LINE = "EMPTY LINE WAS FOUND AT THE END OF LAST METHOD DEFINITION.";
+    public static final String GLOBAL_STATIC_FINAL = "`static final`, but not `final static`";
+    public static final String GLOBAL_FILE_END_EMPTY_LINE = "LAST LINE SHOULD BE EMPTY.";
+    public static final String GLOBAL_MORE_THAN_500_LINES = "CLASS LINES ARE MORE THAN 500.";
+    public static final String GLOBAL_TODO_FIXME = "TODO/FIXME should be fixed ASAP.";
+    public static final String GLOBAL_MOCKITO_ORDER = "Please organize fields order by @Rule, @Spy, @Mock, @InjectMocks";
+    public static final String GLOBAL_MISS_ERROR_CODE_TEST = "YOU MISSED ASSERT FOR BELOW ERRORS:%s";
+
+    public static final String LINE_EXTRAORDINARY_LONG = "The line is too long to be checked, please wrap properly then check again.";
+    public static final String LINE_INCORRECT_CREATION_DATE_FORMAT = "Date format should be dd/mm/yyyy.";
+    public static final String LINE_DOCUMENTATION_FORMAT = "Documentation should start with a capital letter and end with `.:,;!?>`";
+    public static final String LINE_CODE_IN_DOCUMENTATION ="Only first letter is allowed to be a capital unless it's a proper noun. Please try to use {@link ...} or {@code ...} if it refers to code.";
+    public static final String LINE_NO_DOCUMENTATION_CONTENT = "No descriptions were found for the documentation.";
+    public static final String LINE_COMMENTED_OUT_CODES = "The commented out codes should be removed.";
+    public static final String LINE_SINGLE_LINE_COMMENT_FORMAT = "The single line comment should be formatted as '// comment content'.";
+    public static final String LINE_LEFT_CURLY_BRACE_LINE = "'{' cannot occupy a single line.";
+    public static final String LINE_IMPORT_ASTERISK = "The asterisk '*' was found in import statement.";
+    public static final String LINE_NEVER_USED_IMPORTED = "The item is imported but never used.";
+    public static final String LINE_CONSTANT_AS_LEFT_OPERAND = "Please use const as left value to avoid NullPointerException.";
+    public static final String LINE_ENUM_COMPARE = "use '==' instead of equals for enum comparison.";
+    public static final String LINE_UNUSED_FIELD = "You have unused field declaration";
+    public static final String LINE_UNIT_TEST_PRIVATE_FIELD = "The field in unit test should be private.";
+    public static final String LINE_FIELD_MODIFER_FOR_CONTROLLER = "You might need private if it's not referred outside.";
+    public static final String LINE_FIELD_MODIFER_FOR_SERVICE = "You might need protected if it's not referred outside.";
+    public static final String LINE_FIELD_NAME_CONVENTION = "Name pattern should follow `FullClassName fullClassName;`.";
+    public static final String LINE_LOGGER_NAME_CONVENTION = "Please use LOGGER.";
+    public static final String LINE_LOGGER_TARGET_CLASS = "LOGGER's target class should be this class.";
+    public static final String LINE_MISSING_FINAL = "Do you miss the keyword `final` or have redundant keyword `static`?";
+    public static final String LINE_CONSTANT_NAME_CONVENTION = "All letters in constant should be uppercase.";
+    public static final String LINE_MISSING_UNIT_TEST = "Is the unit test missing?";
+    public static final String LINE_CLASS_MISSING_DOCUMENTATION = "Do you have documentation for this class/interface/enum?";
+    public static final String LINE_METHOD_MISSING_DOCUMENTATION = "Do you have documentation for this method?";
+    public static final String LINE_UNUSED_METHOD = "This method is never used.";
+    public static final String LINE_CONSTRUCTOR_MISSING_DOCUMENTATION = "Do you have documentation for this constructor?";
+    public static final String LINE_ASSERT = "To get more details, please use <Assert> for Java test and <assert> for Groovy test.";
+    public static final String LINE_CONSTANT_FOR_LITERAL = "Literal could be extracted as a constant.";
+    public static final String LINE_NOT_FORMATTED = "Is this line formatted well?";
+    public static final String LINE_BAD_VARIABLE_PATTERN = "String or str or redis is a bad naming pattern for business logic process.";
+    public static final String LINE_CONSTANT_REQUESTPROPERTIES = "`requestProperties` could be replaced by RequestParameters.REQUESTPROPERTIES.";
+    public static final String LINE_GROOVY_DEF = "Please replace `def` with an explicit type.";
+    public static final String LINE_BAD_PRINT = "Remove 'print' in your code.";
+    public static final String LINE_EXCEED_140_CHARS = "This line exceeds 140 chars";
+    public static final String LINE_MERGE_LINES = "Could previous line and this line be merged?";
+    public static final String LINE_ENUM_IMPORT = "Import enum type directly, e.g GenderEnum.MALE. Don't forget to clear useless import.";
+    public static final String LINE_MULTIPLE_IDENTICAL_EXPRESSIONS = "Identical expressions used more than once could be extracted as a variable to eliminate duplication: %s";
+    public static final String LINE_REDUCE_MULTIPLE_CALCULATION = "Please extract a variable to store the value of length/size.";
+    public static final String LINE_MOVE_UPPER_ADVICE = "Could this line be moved upper?";
+    public static final String LINE_REDUNDANT_GROOVY_SEMICOLON = "Semicolon could be removed in Groovy.";
+    public static final String LINE_REDUNDANT_GROOVY_PUBLIC = "Keyword public is redundant for non-static field in Groovy.";
+    public static final String LINE_IMPROPER_ACRONYM = "Please rename the variable containing acronym, e.g. getHTMLChar() -} getHtmlChar().";
+    public static final String LINE_BOOLEAN_LITERAL_COMPARE = "Never compare with Boolean literal!";
+    public static final String LINE_LOG_EXCEPTION = "Please log the error here. e.g. LOGGER.error(message, e)";
+
+    public static final Map<String, String> DETAILS = new HashMap<>(100);
+    static {
+    }
+}

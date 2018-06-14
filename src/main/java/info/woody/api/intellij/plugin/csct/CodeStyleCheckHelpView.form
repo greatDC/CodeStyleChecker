@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="info.woody.api.intellij.plugin.csct.CodeStyleCheckHelpView">
-  <grid id="27dc6" binding="helpPanel" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+  <grid id="27dc6" binding="helpPanel" layout-manager="GridLayoutManager" row-count="1" column-count="5" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
       <xy x="20" y="20" width="500" height="3218"/>
@@ -10,7 +10,7 @@
     <children>
       <tabbedpane id="7a0cd" default-binding="true">
         <constraints>
-          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
+          <grid row="0" column="0" row-span="1" col-span="5" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="1" use-parent-layout="false">
             <preferred-size width="200" height="200"/>
           </grid>
         </constraints>
@@ -32,7 +32,7 @@
                   </grid>
                 </constraints>
                 <properties>
-                  <dividerLocation value="173"/>
+                  <dividerLocation value="360"/>
                   <dividerSize value="9"/>
                 </properties>
                 <border type="none"/>
@@ -446,9 +446,7 @@
                     <children>
                       <component id="976ef" class="javax.swing.JTextPane" binding="solutionTextPane">
                         <constraints/>
-                        <properties>
-                          <text value=""/>
-                        </properties>
+                        <properties/>
                       </component>
                     </children>
                   </scrollpane>

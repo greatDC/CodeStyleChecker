@@ -13,9 +13,14 @@ import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckReport;
 
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.HyperlinkEvent;
+import java.awt.event.ActionListener;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
 import static info.woody.api.intellij.plugin.csct.CodeStyleCheckingTool.DETAILS_TEXT_PANE;
@@ -31,6 +36,7 @@ public class CodeStyleCheckResultView {
     private JPanel consolePanel;
     private JTextPane detailsTextPane;
     private JTextPane summaryTextPane;
+    private JTextField filterTextField;
 
     private Project project;
 
@@ -83,6 +89,23 @@ public class CodeStyleCheckResultView {
                     .map(CodeStyleCheckDetailFileData::getReportContent).collect(Collectors.joining("<hr>"));
             detailsTextPane.setText(String.format("<pre>%s</pre>", details));
             detailsTextPane.setCaretPosition(0);
+        });
+
+        filterTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                System.out.println(LocalDateTime.now() + "insert");
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                System.out.println(LocalDateTime.now() + "remove");
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                System.out.println(LocalDateTime.now() + "change");
+            }
         });
     }
 
