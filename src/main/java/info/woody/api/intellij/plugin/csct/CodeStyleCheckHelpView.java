@@ -9,14 +9,13 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Comparator;
 
 public class CodeStyleCheckHelpView {
     private JPanel helpPanel;
-    private JList lineErrorList;
-    private JTextPane solutionTextPane;
-    private JList globalErrorList;
+    private JList checkItemList;
 
     private Project project;
 
@@ -31,31 +30,30 @@ public class CodeStyleCheckHelpView {
 
     private void init() {
 
-        globalErrorList.removeAll();
-        lineErrorList.removeAll();
+        DefaultListModel<String> checkItemListModel = new DefaultListModel<>();
 
-        DefaultListModel<String> globalListModel = new DefaultListModel<>();
-        DefaultListModel<String> lineListModel = new DefaultListModel<>();
-
-        Arrays.stream(CodeStyleCheckIssues.class.getDeclaredFields()).sorted(Comparator.comparing(Field::getName)).forEach(field -> {
+        Arrays.stream(CodeStyleCheckIssues.class.getDeclaredFields()).filter(field -> Modifier.isPublic(field.getModifiers())
+                && Modifier.isStatic(field.getModifiers()) && Modifier.isFinal(field.getModifiers())
+        ).sorted((f1, f2) -> {
+            try {
+                return f1.get(null).toString().compareTo(f2.get(null).toString());
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+                return 0;
+            }
+        }).forEach(field -> {
             try {
                 String element = field.get(null).toString();
-                if (field.getName().startsWith("LINE")) {
-                    lineListModel.addElement(element);
-                } else if (field.getName().startsWith("GLOBAL")) {
-                    globalListModel.addElement(element);
+
+                if (Modifier.isPublic(field.getModifiers()) && Modifier.isStatic(field.getModifiers())
+                        && Modifier.isFinal(field.getModifiers()) && field.getName().matches("^(GLOBAL|LINE).*$")) {
+                    checkItemListModel.addElement(element);
                 }
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
         });
 
-        globalErrorList.setModel(globalListModel);
-        lineErrorList.setModel(lineListModel);
-        globalErrorList.addListSelectionListener(e -> {
-            System.out.println(e.getSource());
-            System.out.println(e.getSource().getClass());
-        });
-
+        checkItemList.setModel(checkItemListModel);
     }
 }

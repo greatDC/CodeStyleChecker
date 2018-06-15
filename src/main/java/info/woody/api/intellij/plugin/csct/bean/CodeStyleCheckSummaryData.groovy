@@ -1,12 +1,7 @@
 package info.woody.api.intellij.plugin.csct.bean
 
 /**
- * <br>Authors.
- * <br>File count.
- * <br>Issue count.
- * <br>I-----------------------.
- * <br>Error count group by error type.
- * <br>I-----------------------.
+ *
  */
 class CodeStyleCheckSummaryData {
     Set<String> authorsKeySet = new TreeSet<>({ String a, String b -> a.compareTo b })

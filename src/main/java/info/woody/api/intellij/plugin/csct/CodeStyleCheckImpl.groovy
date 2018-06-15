@@ -193,7 +193,8 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
                         .matches('^.*@\\w+\\s+\\w+\\s+.*[A-Z][a-z].*[A-Z][a-z].*$')) {
                     printWarning(originLine, LINE_NUMBER, CodeStyleCheckIssues.LINE_CODE_IN_DOCUMENTATION)
                 }
-                if (lines == "/*" && lines[index + 1].trim() == '*') {
+                String nextLine = lines[index + 1].trim()
+                if (trimmedLine == "/**" && (nextLine == '*' || nextLine == '*/' || nextLine.startsWith('* @'))) {
                     printWarning(originLine, LINE_NUMBER, CodeStyleCheckIssues.LINE_NO_DOCUMENTATION_CONTENT)
                 }
             } else if (debug('SINGLE LINE COMMENT') && line.matches('^\\s*//.*$')) {
@@ -290,10 +291,10 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
                         !content.replaceFirst('\\b' + methodName + '\\b', '').contains(methodName)) {
                     printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_UNUSED_METHOD)
                 }
-            } else if (debug('CONSTRUCTOR') && trimmedLine.matches("^.*${PROD_FILE_NAME.replaceFirst('[.].*$', '')}[(]")) {
+            } else if (debug('CONSTRUCTOR') && trimmedSecureLine.matches("^.*${PROD_FILE_NAME.replaceFirst('[.].*$', '')}[(].*")) {
                 LINE_META.CONSTRUCTOR = true
                 if (LINE_NUMBER > 3) {
-                    if (!lines[index - 2].contains("*")) {
+                    if (!lines[index - 2].trim().startsWith("*")) {
                         printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_CONSTRUCTOR_MISSING_DOCUMENTATION)
                     }
                 }
@@ -639,13 +640,13 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
 // DONE - getHTMLChar check should strip string literal first
 // DONE - print check should check word only: exclude __print
 // IN PLAN - static final check should happen as line check
-// IN PLAN - don't check unit test if the package name ends with "bean" or "model"
+// DONE - don't check unit test if the package name ends with "bean" or "model"
 // DONE - Detect the codes commented out
 // DONE - Class should has authors
-// WIP - Add new check for assert / Assert
-// WIP - No documentation content for method
+// DONE - Add new check for assert / Assert
+// DONE - No documentation content for method
 // Empty line should exist between documentation description and @param, @return, @exception
-// WIP - The class for LOGGER should be same as the current class
+// DONE - The class for LOGGER should be same as the current class
 // static should come before non-static
 //
 

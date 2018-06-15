@@ -90,23 +90,6 @@ public class CodeStyleCheckResultView {
             detailsTextPane.setText(String.format("<pre>%s</pre>", details));
             detailsTextPane.setCaretPosition(0);
         });
-
-        filterTextField.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                System.out.println(LocalDateTime.now() + "insert");
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                System.out.println(LocalDateTime.now() + "remove");
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                System.out.println(LocalDateTime.now() + "change");
-            }
-        });
     }
 
     /**

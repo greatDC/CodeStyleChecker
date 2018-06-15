@@ -9,6 +9,10 @@ class CodeStyleCheckSummaryFileData {
     String fileName
     String filePath
 
+    /**
+     * @param fileName File name.
+     * @param filePath File path.
+     */
     CodeStyleCheckSummaryFileData(String fileName, String filePath) {
         this.fileName = fileName
         this.filePath = filePath
