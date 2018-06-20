@@ -10,6 +10,8 @@ class CodeStyleCheckSummaryFileData {
     String filePath
 
     /**
+     * Constructor.
+     *
      * @param fileName File name.
      * @param filePath File path.
      */

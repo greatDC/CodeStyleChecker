@@ -1,7 +1,9 @@
 package info.woody.api.intellij.plugin.csct.bean
 
 /**
- *
+ * Summary data.
+ * @author Woody
+ * @since 15/06/2018
  */
 class CodeStyleCheckSummaryData {
     Set<String> authorsKeySet = new TreeSet<>({ String a, String b -> a.compareTo b })

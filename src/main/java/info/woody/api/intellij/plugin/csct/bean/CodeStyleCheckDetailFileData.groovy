@@ -1,10 +1,10 @@
 package info.woody.api.intellij.plugin.csct.bean
 
-import static info.woody.api.intellij.plugin.csct.util.RichTextMaker.escapeArgs
+import java.util.function.Supplier
+
 import static info.woody.api.intellij.plugin.csct.util.RichTextMaker.escapeContent
 import static info.woody.api.intellij.plugin.csct.util.RichTextMaker.newHighlight
 import static info.woody.api.intellij.plugin.csct.util.RichTextMaker.newLink
-
 
 /**
  * File detail info.
@@ -50,14 +50,13 @@ class CodeStyleCheckDetailFileData extends CodeStyleCheckSummaryFileData {
         if (/*!reportContent &&*/ totalErrorCount > 0) {
             StringBuilder reportContentBuilder = new StringBuilder()
             reportContentBuilder.append("${newLink(filePath, filePath, this.fileName)} has ${totalErrorCount} error(s)")
+            Supplier<StringBuilder> lineBuilder = { -> reportContentBuilder.append(LINE_BREAK_TAG) }
             globalErrorList.each {
-                String errorDescription = String.format(escapeContent(it.error), escapeArgs(it.args))
-                reportContentBuilder.append(LINE_BREAK_TAG).append(newHighlight(errorDescription))
+                lineBuilder().append(newHighlight(String.format(it.error, it.args)))
             }
             lineErrorList.each {
-                String errorDescription = String.format(escapeContent(it.error), escapeArgs(it.args))
-                reportContentBuilder.append(LINE_BREAK_TAG).append(String.valueOf(it.lineNumber).padRight(PADDING_WIDTH)
-                        .concat(escapeContent(it.line.trim())).concat(" &lt;= ").concat(newHighlight(errorDescription)))
+                lineBuilder().append(String.valueOf(it.lineNumber).padRight(PADDING_WIDTH)
+                        .concat(escapeContent(it.line.trim())).concat(" &lt;= ").concat(newHighlight(String.format(it.error, it.args))))
             }
             reportContent = reportContentBuilder.toString()
         }

@@ -124,7 +124,7 @@ public class CodeStyleCheckingTool extends AnAction {
                 .collect(joining("<br>"));
         int fileCountWithoutIssues = summaryData.getFileCountWithoutIssues();
         int fileCountWithIssues = summaryData.getFileCountWithIssues();
-        int fileCount = fileCountWithIssues + fileCountWithoutIssues;
+        int fileCount = report.getFileCount();
         summaryReportBuilder
                 .append("<br>").append(String.format("Thanks for:<br>%s", authors))
                 .append("<br>").append(String.format("Totally %d issue(s) were found in %d file(s)", globalErrorCount + lineErrorCount,

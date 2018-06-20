@@ -2,13 +2,28 @@ package info.woody.api.intellij.plugin.csct
 
 import groovy.util.slurpersupport.GPathResult
 
+/**
+ * Context data.
+ * @author Woody
+ * @since 15/06/2018
+ */
 class CodeStyleCheckContext {
 
     private String sourceDir
     private GPathResult rawXml
 
+    /**
+     * Constructor.
+     */
     private CodeStyleCheckContext() {}
 
+    /**
+     * Create an instance of type {@link CodeStyleCheckContext}.
+     *
+     * @param configurationFile Configuration file.
+     * @param sourceDir Source code directory.
+     * @return Context information.
+     */
     static CodeStyleCheckContext newInstance(File configurationFile, String sourceDir) {
         CodeStyleCheckContext context = new CodeStyleCheckContext()
         context.rawXml = new XmlSlurper().parse(configurationFile)

@@ -1,12 +1,26 @@
 package info.woody.api.intellij.plugin.csct.bean
 
+/**
+ * Report.
+ *
+ * @author Woody
+ * @since 15/06/2018
+ */
 class CodeStyleCheckReport {
     CodeStyleCheckSummaryData summaryData
     CodeStyleCheckDetailData detailDetailData
+    int fileCount
 
-    CodeStyleCheckReport(CodeStyleCheckSummaryData summaryData, CodeStyleCheckDetailData detailDetailData) {
+    /**
+     * Constructor.
+     * @param summaryData Summary data.
+     * @param detailDetailData Detail data.
+     * @param fileCount File count.
+     */
+    CodeStyleCheckReport(CodeStyleCheckSummaryData summaryData, CodeStyleCheckDetailData detailDetailData, int fileCount) {
         this.summaryData = summaryData
         this.detailDetailData = detailDetailData
+        this.fileCount = fileCount
     }
 
     /**

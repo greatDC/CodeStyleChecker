@@ -4,6 +4,9 @@ import groovy.xml.XmlUtil
 
 /**
  * Utility class to create HTML tags.
+ *
+ * @author Woody
+ * @since 15/06/2018
  */
 class RichTextMaker {
 

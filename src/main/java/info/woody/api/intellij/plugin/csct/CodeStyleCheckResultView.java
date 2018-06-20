@@ -13,14 +13,9 @@ import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckReport;
 
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.JTextPane;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.HyperlinkEvent;
-import java.awt.event.ActionListener;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
 import static info.woody.api.intellij.plugin.csct.CodeStyleCheckingTool.DETAILS_TEXT_PANE;
@@ -36,19 +31,31 @@ public class CodeStyleCheckResultView {
     private JPanel consolePanel;
     private JTextPane detailsTextPane;
     private JTextPane summaryTextPane;
-    private JTextField filterTextField;
 
     private Project project;
 
+    /**
+     * Constructor.
+     *
+     * @param project Project.
+     */
     CodeStyleCheckResultView(Project project) {
         this.project = project;
         this.init();
     }
 
+    /**
+     * Get main panel containing all UI elements.
+     *
+     * @return The main panel component.
+     */
     public JPanel getPanel() {
         return this.consolePanel;
     }
 
+    /**
+     * Initiate components.
+     */
     private void init() {
         setupTextPane(SUMMARY_TEXT_PANE, summaryTextPane);
         setupTextPane(DETAILS_TEXT_PANE, detailsTextPane);

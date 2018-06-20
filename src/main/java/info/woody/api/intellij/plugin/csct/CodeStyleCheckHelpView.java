@@ -1,21 +1,17 @@
 package info.woody.api.intellij.plugin.csct;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.ui.components.JBList;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckIssues;
 
 import javax.swing.DefaultListModel;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JTextPane;
-import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
-import java.util.Comparator;
 
 public class CodeStyleCheckHelpView {
     private JPanel helpPanel;
-    private JList checkItemList;
+    private JBList checkItemList;
 
     private Project project;
 
@@ -32,9 +28,10 @@ public class CodeStyleCheckHelpView {
 
         DefaultListModel<String> checkItemListModel = new DefaultListModel<>();
 
-        Arrays.stream(CodeStyleCheckIssues.class.getDeclaredFields()).filter(field -> Modifier.isPublic(field.getModifiers())
-                && Modifier.isStatic(field.getModifiers()) && Modifier.isFinal(field.getModifiers())
-        ).sorted((f1, f2) -> {
+        Arrays.stream(CodeStyleCheckIssues.class.getDeclaredFields()).filter(field -> {
+            int modifiers = field.getModifiers();
+            return Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers) && Modifier.isFinal(modifiers);
+        }).sorted((f1, f2) -> {
             try {
                 return f1.get(null).toString().compareTo(f2.get(null).toString());
             } catch (IllegalAccessException e) {
@@ -43,10 +40,10 @@ public class CodeStyleCheckHelpView {
             }
         }).forEach(field -> {
             try {
-                String element = field.get(null).toString();
-
-                if (Modifier.isPublic(field.getModifiers()) && Modifier.isStatic(field.getModifiers())
-                        && Modifier.isFinal(field.getModifiers()) && field.getName().matches("^(GLOBAL|LINE).*$")) {
+                int modifiers = field.getModifiers();
+                if (Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers)
+                        && Modifier.isFinal(modifiers) && field.getName().matches("^(GLOBAL|LINE).*$")) {
+                    String element = field.get(null).toString();
                     checkItemListModel.addElement(element);
                 }
             } catch (IllegalAccessException e) {

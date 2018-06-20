@@ -11,7 +11,6 @@ import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckSummaryFileData
 import groovy.io.FileType
 
 /**
- *
  * <p>http://www.oracle.com/technetwork/java/codeconvtoc-136057.html</p>
  *
  * @author Woody
@@ -22,8 +21,8 @@ class CodeStyleCheckImpl {
 ConfigService.java
 """.replaceAll("(?i)[^a-z.\\n]", "").split("\\s*\\n\\s*") as List).findAll { return it.length() }
     public String FILENAME_PATTERN_TO_SKIP = '^.*(Controller).*$'
-/* below file list could be created by git command 'git diff --name-only branch1 branch2'. */
-/* Sample: "git diff --name-only HEAD origin/SPRINT_BOEING_727 | grep -e java$ -e groovy$". */
+    // below file list could be created by git command 'git diff --name-only branch1 branch2'
+    // Sample: "git diff --name-only HEAD origin/SPRINT_BOEING_727 | grep -e java$ -e groovy$"
     public String GIT_FILES_TO_MERGE = '''
 src/main/java/com/openjaw/api/WebApplicationConfig.java
 '''
@@ -185,8 +184,8 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
                     if (!line.matches('''^.*\\b([012][0-9]|30|31)/(0[1-9]|1[0-2])/201[0-9]\\b.*$''')) {
                         printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_INCORRECT_CREATION_DATE_FORMAT)
                     }
-                } else if (!trimmedLine.replaceFirst('^[^*]*[*] ([^@]*((@param|@throws) \\w+|@return))?', '')
-                        .matches('^\\s*[0-9A-Z{].*[.:,;!?>]$')) {
+                } else if (!trimmedLine.replaceFirst('^[*] ([^@]*((@param|@throws) \\w+|@return))?', '')
+                        .matches('^[0-9A-Z{<].*[.:,;!?>]$')) {
                     printWarning(originLine, LINE_NUMBER, CodeStyleCheckIssues.LINE_DOCUMENTATION_FORMAT)
                 }
                 if (line.replaceAll('[{][^}]+[}]', '').replaceAll('(Chinese|International)', '')
@@ -221,16 +220,18 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
                 printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_CONSTANT_AS_LEFT_OPERAND)
             } else if (debug('ENUM COMPARISON') && !LINE_META.FIELD && line.matches('^.+\\b\\w+Enum[.][A-Z_]+[.]equals.+$')) {
                 printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_ENUM_COMPARE)
-            } else if (debug('FIELD') && line.matches('^\\s*(private|protected|public)[^<{(]+$') &&
+            } else if (debug('FIELD') && trimmedSecureLine.matches('^(private|protected|public)[^{(]+$') &&
                     !line.matches('^.*\\b(class|interface|enum)\\b.*$')) {
                 LINE_META.FIELD = true
                 String fieldName = line.replaceAll('=.*$', '').trim().replaceAll('^.*\\b(\\w+)[\\s;]*$', '$1')
-                String codesAfterConstructor = content.substring(content.indexOf("${fieldName} = ${fieldName}") + fieldName.length() * 2 + 3)
-                if (debug('UNUSED FIELD') && lines[index - 1].trim() != "@Mock"
-                        && PROD_FILE_NAME.matches('^.+(Impl|Service|Validator|Mapper|Process|Util|Interceptor|Helper).*$')
+                String fieldAssignment = "${fieldName} = ${fieldName}"
+                String codesAfterConstructor = content.substring(content.indexOf(fieldAssignment) + fieldAssignment.length())
+                String codesAfterThisLine = (lines as List).subList(index + 1, lines.size() - 1).join('\n')
+                if (debug('UNUSED FIELD') && !['@Mock', '@Spy'].contains(lines[index - 1].trim()) // don't check mocked field
+                        // && PROD_FILE_NAME.matches('^.+(Impl|Service|Validator|Mapper|Process|Util|Interceptor|Helper).*$')
                         && !trimmedLine.startsWith("public")
-                        && (!(lines as List).subList(index + 1, lines.size() - 1).join('\n').matches('(?s)^.*\\b' + fieldName + '\\b.*$') // field never appears after declaration
-                                || (content.contains("${fieldName} = ${fieldName}") && // don't check @Mock field
+                        && (!codesAfterThisLine.matches('(?s)^.*\\b' + fieldName + '\\b.*$') // field never appears after declaration
+                                || (content.contains(fieldAssignment) && // field never appears after constructor
                                 !codesAfterConstructor.matches('(?s)^.*\\b' + fieldName + '\\b.*$')))) {
                     printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_UNUSED_FIELD)
                 }
@@ -238,13 +239,15 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
                     printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_UNIT_TEST_PRIVATE_FIELD)
                 }
                 if (debug('REFERENCE FIELD') && !isTest && !line.contains("LOGGER")) {
-                    if (PROD_FILE_NAME.contains("Controller.java")) {
-                        if (!line.contains("private")) {
-                            printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_FIELD_MODIFER_FOR_CONTROLLER)
-                        }
-                    } else {
-                        if (!line.contains("protected") && !line.contains("public")) {
-                            printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_FIELD_MODIFER_FOR_SERVICE)
+                    if (!lines[0].matches('^.*\\b(models?|beans?)\\b.*$')) {
+                        if (PROD_FILE_NAME.contains("Controller.java")) {
+                            if (!line.contains("private")) {
+                                printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_FIELD_MODIFIER_FOR_CONTROLLER)
+                            }
+                        } else {
+                            if (!line.contains("protected") && !line.contains("public")) {
+                                printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_FIELD_MODIFIER_FOR_SERVICE)
+                            }
                         }
                     }
                 }
@@ -255,7 +258,8 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
                 if (debug('CHECK LOGGER') && line.contains(" logger ")) {
                     printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_LOGGER_NAME_CONVENTION)
                 }
-                if (debug('CHECK LOGGER') && line.toUpperCase().contains(" LOGGER ") && !line.contains(PROD_FILE_NAME.replaceFirst('[.]\\w+$', ''))) {
+                if (debug('CHECK LOGGER') && trimmedSecureLine.toUpperCase().contains(" LOGGER ")
+                        && !trimmedSecureLine.contains(PROD_FILE_NAME.replaceFirst('[.]\\w+$', ''))) {
                     printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_LOGGER_TARGET_CLASS)
                 }
                 if (debug('STATIC') && line.contains(" static ")) {
@@ -492,7 +496,7 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
     CodeStyleCheckReport calculateStatistics() {
         CodeStyleCheckSummaryData summaryData = new CodeStyleCheckSummaryData()
         CodeStyleCheckDetailData detailData = new CodeStyleCheckDetailData()
-        CodeStyleCheckReport report = new CodeStyleCheckReport(summaryData, detailData)
+        CodeStyleCheckReport report = new CodeStyleCheckReport(summaryData, detailData, ALL_FILE_COUNT)
         STATISTICS_ALL_IN_ONE.each {
             Map fileDetailMap = it.value
             List authors = fileDetailMap.get('AUTHORS')
@@ -533,7 +537,7 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
         }
 
         detailData.fileDataList.each {
-            def totalErrorCountInEachFile = it.getTotalErrorCount()
+            int totalErrorCountInEachFile = it.getTotalErrorCount()
             if (totalErrorCountInEachFile > 0) {
                 if (detailData.mapAuthorsErrors.containsKey(it.authorsKey)) {
                     int totalErrorCount = detailData.mapAuthorsErrors.get(it.authorsKey)
