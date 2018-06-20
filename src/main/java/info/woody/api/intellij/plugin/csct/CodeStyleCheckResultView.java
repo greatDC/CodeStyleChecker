@@ -23,9 +23,10 @@ import static info.woody.api.intellij.plugin.csct.CodeStyleCheckingTool.REPORT_I
 import static info.woody.api.intellij.plugin.csct.CodeStyleCheckingTool.SUMMARY_TEXT_PANE;
 
 /**
- * Tool window to show the scanning result.
+ * Scanning result view in the tool window.
  *
  * @author Woody
+ * @since 15/06/2018
  */
 public class CodeStyleCheckResultView {
     private JPanel consolePanel;

@@ -184,7 +184,7 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
                     if (!line.matches('''^.*\\b([012][0-9]|30|31)/(0[1-9]|1[0-2])/201[0-9]\\b.*$''')) {
                         printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_INCORRECT_CREATION_DATE_FORMAT)
                     }
-                } else if (!trimmedLine.replaceFirst('^[*] ([^@]*((@param|@throws) \\w+|@return))?', '')
+                } else if (!trimmedLine.replaceFirst('^[*] ([^@]*((@param|@throws) \\w+|@return))?', '').trim()
                         .matches('^[0-9A-Z{<].*[.:,;!?>]$')) {
                     printWarning(originLine, LINE_NUMBER, CodeStyleCheckIssues.LINE_DOCUMENTATION_FORMAT)
                 }
@@ -239,7 +239,7 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
                     printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_UNIT_TEST_PRIVATE_FIELD)
                 }
                 if (debug('REFERENCE FIELD') && !isTest && !line.contains("LOGGER")) {
-                    if (!lines[0].matches('^.*\\b(models?|beans?)\\b.*$')) {
+                    if (!lines[0].matches('^.*\\b(models?|beans?|constants?)\\b.*$')) {
                         if (PROD_FILE_NAME.contains("Controller.java")) {
                             if (!line.contains("private")) {
                                 printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_FIELD_MODIFIER_FOR_CONTROLLER)
@@ -339,8 +339,8 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
             if (!LINE_META.COMMENT && !LINE_META.DOCUMENTATION && trimmedSecureLine.matches('^.*\\bprint(ln)?\\b.+$')) {
                 printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_BAD_PRINT)
             }
-            if (140 < lineLength && lineLength < 234 && !PROD_FILE_NAME.contains("Controller.java") &&
-                    lineLength - secureLine.length() < 100) {
+            if (!PROD_FILE_NAME.contains("Controller.java") &&
+                    lineLength > 140 /*140 < lineLength && lineLength < 234 && lineLength - secureLine.length() < 100*/) {
                 printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_EXCEED_140_CHARS)
             }
             if (debug('MERGE LINES') && !isTest && index > 1 && lines[index - 1].trim().length() > 0 && trimmedLineLength > 0 &&
@@ -363,6 +363,7 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
                             (!lines[index - 1].contains(":") && !line.contains(":")) && // Groovy's map
                             !trimmedLine.startsWith(".") && // method of pipeline pattern
                             !trimmedLine.startsWith("if") && // if statement
+                            !trimmedLine.matches('^(String|int|Map|List|Set)\\b.*$') && // declaration or assignment
                             !line.contains("import ") && !lines[index - 1].contains("import ") && // import statement
                             !line.contains(" = ") && !lines[index - 1].contains(" = ") && // assignment statement
                             !line.matches('^.*[\\w<>]+ \\w+.*$') // skip method parameter declaration

@@ -50,7 +50,7 @@ class CodeStyleCheckIssues {
     public static final String LINE_BAD_VARIABLE_PATTERN = "String or str or redis is a bad naming pattern for business description."
     public static final String LINE_CONSTANT_REQUESTPROPERTIES = "RequestParameters.REQUESTPROPERTIES can replace `requestProperties`."
     public static final String LINE_GROOVY_DEF = "Please replace `def` with an explicit type."
-    public static final String LINE_BAD_PRINT = "Please remove `print` in your code."
+    public static final String LINE_BAD_PRINT = "Please remove `print` or `println` in your code."
     public static final String LINE_EXCEED_140_CHARS = "This line exceeds 140 chars."
     public static final String LINE_MERGE_LINES = "Could previous line and this line be merged?"
     public static final String LINE_ENUM_IMPORT = "Import enum type directly, e.g GenderEnum.MALE. Don't forget to clear useless import."

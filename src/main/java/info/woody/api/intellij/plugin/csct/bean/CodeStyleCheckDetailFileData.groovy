@@ -1,7 +1,5 @@
 package info.woody.api.intellij.plugin.csct.bean
 
-import java.util.function.Supplier
-
 import static info.woody.api.intellij.plugin.csct.util.RichTextMaker.escapeContent
 import static info.woody.api.intellij.plugin.csct.util.RichTextMaker.newHighlight
 import static info.woody.api.intellij.plugin.csct.util.RichTextMaker.newLink
@@ -50,7 +48,7 @@ class CodeStyleCheckDetailFileData extends CodeStyleCheckSummaryFileData {
         if (/*!reportContent &&*/ totalErrorCount > 0) {
             StringBuilder reportContentBuilder = new StringBuilder()
             reportContentBuilder.append("${newLink(filePath, filePath, this.fileName)} has ${totalErrorCount} error(s)")
-            Supplier<StringBuilder> lineBuilder = { -> reportContentBuilder.append(LINE_BREAK_TAG) }
+            Closure<StringBuilder> lineBuilder = { reportContentBuilder.append(LINE_BREAK_TAG) }
             globalErrorList.each {
                 lineBuilder().append(newHighlight(String.format(it.error, it.args)))
             }

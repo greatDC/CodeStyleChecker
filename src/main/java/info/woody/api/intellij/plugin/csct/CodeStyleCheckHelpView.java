@@ -9,23 +9,40 @@ import javax.swing.JPanel;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
+/**
+ * Help view in the tool window.
+ *
+ * @author Woody
+ * @since 15/06/2018
+ */
 public class CodeStyleCheckHelpView {
     private JPanel helpPanel;
     private JBList checkItemList;
-
     private Project project;
 
+    /**
+     * Constructor.
+     *
+     * @param project Virtual project.
+     */
     CodeStyleCheckHelpView(Project project) {
         this.project = project;
         this.init();
     }
 
+    /**
+     * Get the main panel content.
+     *
+     * @return Panel.
+     */
     public JPanel getPanel() {
         return this.helpPanel;
     }
 
+    /**
+     * Initialization.
+     */
     private void init() {
-
         DefaultListModel<String> checkItemListModel = new DefaultListModel<>();
 
         Arrays.stream(CodeStyleCheckIssues.class.getDeclaredFields()).filter(field -> {
@@ -33,7 +50,10 @@ public class CodeStyleCheckHelpView {
             return Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers) && Modifier.isFinal(modifiers);
         }).sorted((f1, f2) -> {
             try {
-                return f1.get(null).toString().compareTo(f2.get(null).toString());
+                char field1Char = f1.getName().charAt(0);
+                char field2Char = f2.getName().charAt(0);
+                int charCompareResult = Character.compare(field1Char, field2Char);
+                return  (charCompareResult == 0) ? f1.get(null).toString().compareTo(f2.get(null).toString()) : charCompareResult;
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
                 return 0;
