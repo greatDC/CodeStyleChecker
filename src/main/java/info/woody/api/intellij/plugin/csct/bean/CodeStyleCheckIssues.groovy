@@ -14,7 +14,7 @@ class CodeStyleCheckIssues {
     public static final String GLOBAL_STATIC_FINAL = "ALL `final static` SHOULD BE CORRECTED TO `static final`."
     public static final String GLOBAL_FILE_END_EMPTY_LINE = "LAST LINE OF THE FILE SHOULD BE EMPTY LINE."
     public static final String GLOBAL_MORE_THAN_500_LINES = "CLASS LINES ARE MORE THAN 500."
-    public static final String GLOBAL_TODO_FIXME = "TODO/FIXME should be fixed ASAP."
+    public static final String GLOBAL_TODO_FIXME_HACK_XXX = "TODO/FIXME/HACK/XXX should be fixed ASAP."
     public static final String GLOBAL_MOCKITO_ORDER = "CORRECT FIELD DECLARATION ORDER FOR UNIT TEST: @Rule, @Spy, @Mock, @InjectMocks."
     public static final String GLOBAL_MISS_ERROR_CODE_TEST = "UNIT TEST MISSED ASSERT FOR BELOW ERRORS:%s"
 
@@ -56,6 +56,7 @@ class CodeStyleCheckIssues {
     public static final String LINE_ENUM_IMPORT = "Import enum type directly, e.g GenderEnum.MALE. Don't forget to clear useless import."
     public static final String LINE_MULTIPLE_IDENTICAL_EXPRESSIONS = "Identical expressions used more than once should be extracted as a variable to eliminate duplication: %s"
     public static final String LINE_REDUCE_MULTIPLE_CALCULATION = "Please define a variable to store the value of length/size."
+    public static final String LINE_OPTIMIZE_RETURN = "Please optimize multiple `return` into one, ternary operator might be helpful."
     public static final String LINE_MOVE_UPPER_ADVICE = "Could this line be moved upper?"
     public static final String LINE_REDUNDANT_GROOVY_SEMICOLON = "Semicolon is unnecessary in Groovy."
     public static final String LINE_REDUNDANT_GROOVY_PUBLIC = "Keyword `public` is redundant for non-static field in Groovy."

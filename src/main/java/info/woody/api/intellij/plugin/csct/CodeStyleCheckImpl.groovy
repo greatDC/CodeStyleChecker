@@ -124,8 +124,8 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
         if (!isTest && content.split("""\r?\n""").length > 500) {
             printGlobalWarning CodeStyleCheckIssues.GLOBAL_MORE_THAN_500_LINES
         }
-        if (content.toLowerCase().matches('(?i)^.*\\b(todo|fixme)\\b.*$')) {
-            printGlobalWarning CodeStyleCheckIssues.GLOBAL_TODO_FIXME
+        if (content.toLowerCase().matches('(?i)^.*\\b(todo|fixme|hack|xxx)\\b.*$')) {
+            printGlobalWarning CodeStyleCheckIssues.GLOBAL_TODO_FIXME_HACK_XXX
         }
         if (isTest) {
             int posRule = content.indexOf('@Rule')
@@ -315,9 +315,9 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
                     && !trimmedLine.startsWith('*') && !trimmedSecureLine.startsWith('//') // comment
                     && !trimmedLine.startsWith('@') // annotation
             ) {
-                if (line.matches('(?i)^.+?("[a-z0-9.]+"|"[-+*/;.]+").*$') // string pattern only
-                        || secureLine.replaceAll('\\[\\d+\\]', '') // remove string pattern and index pattern
-                        .matches('^.*\\b([2-9]|[1-9]\\d+|\\d+[.]\\d+)\\b.*$') // number pattern only
+                if (trimmedLine.matches('(?i)^.+?("[a-z0-9._]+"|"[-+*/;.]+").*$') // string pattern only
+                        || trimmedLine.replaceAll('\\[\\d+\\]', '') // remove index pattern for list element
+                        .matches('^.*\\b([2-9]|[1-9]\\d+|\\d+[.]\\d+)\\b.*$') // number pattern only, excluding 0 and 1
                 ) {
                     printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_CONSTANT_FOR_LITERAL)
                 }
@@ -388,9 +388,13 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
                     }
                 }
             }
-            if (debug('FOR STATEMENT') && !LINE_META.COMMENT && !LINE_META.DOCUMENTATION && trimmedSecureLine.contains('for') &&
+            if (debug('FOR STATEMENT') && !LINE_META.COMMENT && !LINE_META.DOCUMENTATION && trimmedSecureLine.startsWith('for') &&
                     (trimmedSecureLine.contains('.length') || trimmedSecureLine.contains('.size()'))) {
                 printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_REDUCE_MULTIPLE_CALCULATION)
+            }
+            if (debug('RETURN STATEMENT') && !LINE_META.COMMENT && !LINE_META.DOCUMENTATION && lineLength - LINE_NUMBER > 2 &&
+                    trimmedLine.startsWith('return') && lines[index + 2].trim().startsWith('return')) {
+                printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_OPTIMIZE_RETURN)
             }
             if (debug('LINE MOVE UPPER') && !LINE_META.COMMENT && !LINE_META.DOCUMENTATION &&
                     line.replaceAll('\\s', '').matches('^[(){]{2,}$')) {
@@ -653,5 +657,6 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
 // Empty line should exist between documentation description and @param, @return, @exception
 // DONE - The class for LOGGER should be same as the current class
 // static should come before non-static
-//
+// indent badly
+
 
