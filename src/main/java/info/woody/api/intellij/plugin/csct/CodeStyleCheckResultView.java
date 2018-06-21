@@ -1,6 +1,8 @@
 package info.woody.api.intellij.plugin.csct;
 
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.LogicalPosition;
+import com.intellij.openapi.editor.ScrollType;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorProvider;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
@@ -66,12 +68,23 @@ public class CodeStyleCheckResultView {
                 return;
             }
             String description = e.getDescription();
-            VirtualFile virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(Paths.get(description).toFile());
+            String path;
+            int lineIndex = 0;
+            if (description.contains("#")) {
+                path = description.replaceFirst("#.+$", "");
+                lineIndex = Integer.valueOf(description.replaceFirst("^.+#", "")) - 1;
+            } else {
+                path = description;
+            }
+            VirtualFile virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(Paths.get(path).toFile());
             if (null != virtualFile && virtualFile.isValid()) {
                 FileEditorProvider[] providers = FileEditorProviderManager.getInstance().getProviders(project, virtualFile);
                 if (providers.length > 0) {
                     OpenFileDescriptor openFileDescriptor = new OpenFileDescriptor(project, virtualFile);
                     Editor editor = FileEditorManager.getInstance(project).openTextEditor(openFileDescriptor, false);
+                    editor.getCaretModel().moveToLogicalPosition(new LogicalPosition(lineIndex, 0));
+                    editor.getScrollingModel().scrollToCaret(ScrollType.CENTER);
+                    editor.getSelectionModel().selectLineAtCaret();
                     /*
                     PropertiesComponent.getInstance().
                     CaretModel caretModel = editor.getCaretModel();

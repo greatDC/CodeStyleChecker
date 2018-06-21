@@ -45,6 +45,7 @@ public class CodeStyleCheckingTool extends AnAction {
     public static final String REPORT_INFO = "REPORT_INFO";
     private static final String ACTION_ID_SAVE_ALL = "SaveAll";
     private static final String DEFAULT_CONFIGURATION_XML = "DefaultConfiguration.xml";
+    private static final String DEFAULT_MODULE_CONTENT = "tRetailAPI";
 
     @Override
     public void actionPerformed(AnActionEvent e) {
@@ -53,13 +54,13 @@ public class CodeStyleCheckingTool extends AnAction {
                 .filter(description -> description.getName().matches("^t-?RetailAPI$")).findAny();
         if (module.isPresent()) {
             contentEntry = Arrays.stream(ModuleRootManager.getInstance(module.orElse(null)).getContentEntries())
-                    .filter(entry -> entry.getFile().getPath().endsWith("tRetailAPI")).findAny();
+                    .filter(entry -> entry.getFile().getPath().endsWith(DEFAULT_MODULE_CONTENT)).findAny();
         }
         Path projectPath = Paths.get(e.getProject().getBaseDir().getPath());
-        Path configurationFilePath = Paths.get(projectPath + "/tRetailApiCodeStyleCheckingTool.xml");
+        Path configurationFilePath = Paths.get(projectPath + "/CodeStyleCheckingTool.xml");
         if (Files.notExists(configurationFilePath)) {
             int exitCode = Messages.showOkCancelDialog(
-                    "You don't have tRetailApiCodeStyleCheckingTool.xml in project. Do you want to create one now?",
+                    "You don't have CodeStyleCheckingTool.xml in project. Do you want to create one now?",
                     "", Messages.getWarningIcon());
             if (Messages.OK == exitCode) {
                 createDefaultConfigurationFile(configurationFilePath);
@@ -70,8 +71,8 @@ public class CodeStyleCheckingTool extends AnAction {
 
         ActionManager.getInstance().getAction(ACTION_ID_SAVE_ALL).actionPerformed(e);
 
-        String tRetailApiModuleRootDir = contentEntry.map(ContentEntry::getFile).map(VirtualFile::getPath).orElse(null);
-        CodeStyleCheckContext context = CodeStyleCheckContext.newInstance(configurationFilePath.toFile(), tRetailApiModuleRootDir);
+        String defaultModuleRootDir = contentEntry.map(ContentEntry::getFile).map(VirtualFile::getPath).orElse(null);
+        CodeStyleCheckContext context = CodeStyleCheckContext.newInstance(configurationFilePath.toFile(), defaultModuleRootDir);
         if (null == context.MY_SOURCE_DIR()) {
             Messages.showMessageDialog(
                     "The path configured in `SourceDir` is incorrect. Please check the configuration file in project root folder.",

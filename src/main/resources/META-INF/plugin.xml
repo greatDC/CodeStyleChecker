@@ -12,7 +12,9 @@
     ]]></description>
 
     <change-notes><![CDATA[
-      <p>2018.06 - Initial version for release. Please contact me if any issues.</p>
+      <p>21.06.2018 - Support navigation within editor by line number.</p>
+      <p>20.06.2018 - Totally we support 54 code style check items for Java and Groovy.</p>
+      <p>05.06.2018 - Initial version for release. Please contact me if any issues.</p>
     ]]>
     </change-notes>
 

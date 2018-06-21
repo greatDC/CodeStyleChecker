@@ -47,14 +47,16 @@ class CodeStyleCheckDetailFileData extends CodeStyleCheckSummaryFileData {
         int totalErrorCount = getTotalErrorCount()
         if (/*!reportContent &&*/ totalErrorCount > 0) {
             StringBuilder reportContentBuilder = new StringBuilder()
-            reportContentBuilder.append("${newLink(filePath, filePath, this.fileName)} has ${totalErrorCount} error(s)")
+            reportContentBuilder.append("${newLink(filePath, filePath, fileName)} has ${totalErrorCount} error(s)")
             Closure<StringBuilder> lineBuilder = { reportContentBuilder.append(LINE_BREAK_TAG) }
             globalErrorList.each {
                 lineBuilder().append(newHighlight(String.format(it.error, it.args)))
             }
             lineErrorList.each {
-                lineBuilder().append(String.valueOf(it.lineNumber).padRight(PADDING_WIDTH)
-                        .concat(escapeContent(it.line.trim())).concat(" &lt;= ").concat(newHighlight(String.format(it.error, it.args))))
+                String lineNumber = it.lineNumber.toString()
+                String padding = lineNumber.padRight(PADDING_WIDTH).replace(lineNumber, '')
+                lineBuilder().append(newLink("${filePath}#${lineNumber}", lineNumber, lineNumber).concat(padding)
+                        .concat("${escapeContent(it.line.trim())} &lt;= ${newHighlight(String.format(it.error, it.args))}"))
             }
             reportContent = reportContentBuilder.toString()
         }

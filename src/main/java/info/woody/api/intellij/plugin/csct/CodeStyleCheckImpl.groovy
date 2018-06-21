@@ -16,7 +16,7 @@ import groovy.io.FileType
  * @author Woody
  */
 class CodeStyleCheckImpl {
-    public String MY_SOURCE_DIR = "C:\\workstation\\workspace\\git\\gitOyster\\tRetailAPI\\src"
+    public String MY_SOURCE_DIR = ""
     public List<String> FILES_TO_SKIP = ("""
 ConfigService.java
 """.replaceAll("(?i)[^a-z.\\n]", "").split("\\s*\\n\\s*") as List).findAll { return it.length() }
@@ -658,5 +658,4 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
 // DONE - The class for LOGGER should be same as the current class
 // static should come before non-static
 // indent badly
-
-
+// disable the specified check items
