@@ -62,5 +62,5 @@ class CodeStyleCheckIssues {
     public static final String LINE_REDUNDANT_GROOVY_PUBLIC = "Keyword `public` is redundant for non-static field in Groovy."
     public static final String LINE_IMPROPER_ACRONYM = "Please rename the variable containing acronym, e.g. getHTMLChar() -} getHtmlChar()."
     public static final String LINE_BOOLEAN_LITERAL_COMPARE = "Never compare with Boolean literal!"
-    public static final String LINE_LOG_EXCEPTION = "Please log the error. e.g. LOGGER.error(message, e)"
+    public static final String LINE_LOG_EXCEPTION = "Please log the error like `LOGGER.error(message, e)`."
 }

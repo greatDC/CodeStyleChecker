@@ -15,8 +15,7 @@ import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckReport;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckSummaryData;
 import org.apache.commons.lang.StringEscapeUtils;
 
-import javax.swing.JComponent;
-import javax.swing.JTextPane;
+import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -49,23 +48,13 @@ public class CodeStyleCheckingTool extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
-        if (false) {
-            Optional<Module> module = Arrays.stream(ModuleManager.getInstance(e.getProject()).getModules())
-                    .filter(description -> description.getName().matches("^t-?RetailAPI$")).findAny();
-            if (!module.isPresent()) {
-                Messages.showMessageDialog("You don't have tRetailAPI module in this project yet.", "", Messages.getWarningIcon());
-                return;
-            }
-
-            Optional<ContentEntry> contentEntry = Arrays.stream(ModuleRootManager.getInstance(module.orElse(null)).getContentEntries())
-                    .filter(entry -> entry.getFile().getPath().endsWith("tRetailAPI")).findAny();
-            if (!contentEntry.isPresent()) {
-                Messages.showMessageDialog("The module tRetailAPI's content root is not set well.", "", Messages.getErrorIcon());
-                return;
-            }
-        }// don't check for a specific module
         Optional<ContentEntry> contentEntry = Optional.ofNullable(null);
-
+        Optional<Module> module = Arrays.stream(ModuleManager.getInstance(e.getProject()).getModules())
+                .filter(description -> description.getName().matches("^t-?RetailAPI$")).findAny();
+        if (module.isPresent()) {
+            contentEntry = Arrays.stream(ModuleRootManager.getInstance(module.orElse(null)).getContentEntries())
+                    .filter(entry -> entry.getFile().getPath().endsWith("tRetailAPI")).findAny();
+        }
         Path projectPath = Paths.get(e.getProject().getBaseDir().getPath());
         Path configurationFilePath = Paths.get(projectPath + "/tRetailApiCodeStyleCheckingTool.xml");
         if (Files.notExists(configurationFilePath)) {
@@ -83,6 +72,12 @@ public class CodeStyleCheckingTool extends AnAction {
 
         String tRetailApiModuleRootDir = contentEntry.map(ContentEntry::getFile).map(VirtualFile::getPath).orElse(null);
         CodeStyleCheckContext context = CodeStyleCheckContext.newInstance(configurationFilePath.toFile(), tRetailApiModuleRootDir);
+        if (null == context.MY_SOURCE_DIR()) {
+            Messages.showMessageDialog(
+                    "The path configured in `SourceDir` is incorrect. Please check the configuration file in project root folder.",
+                    "", Messages.getWarningIcon());
+            return;
+        }
         CodeStyleCheckImpl codeStyleCheck = new CodeStyleCheckImpl();
         codeStyleCheck.MY_SOURCE_DIR = context.MY_SOURCE_DIR();
         codeStyleCheck.FILENAME_PATTERN_TO_SKIP = context.FILENAME_PATTERN_TO_SKIP();

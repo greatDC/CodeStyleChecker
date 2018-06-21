@@ -145,7 +145,7 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
             }
         }
         if (PROD_FILE_NAME.endsWith(".java") || PROD_FILE_NAME.endsWith(".groovy")) {
-            List testFile = ALL_FILES.find { TEST_FILE_NAME == it.name }
+            File testFile = ALL_FILES.find { TEST_FILE_NAME == it.name }
             if (testFile) {
                 String regexErrorCode = 'ErrorCodes[.][A-Z0-9_]+'
                 List missingErrorCodes =
@@ -417,7 +417,7 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
             }
             if (debug('CATCH CLAUSE') && LINE_NUMBER > 8 && !LINE_META.COMMENT && !LINE_META.DOCUMENTATION
                     && stripStringPattern(lines[index - 1].trim()).split('\\W+').contains('catch')
-                    && !trimmedSecureLine.matches('^LOGGER.error[(][^,]+[)].*$')) {
+                    && (!trimmedSecureLine.startsWith('LOGGER.error') || !trimmedSecureLine.contains(','))) {
                 printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_LOG_EXCEPTION)
             }
         }
