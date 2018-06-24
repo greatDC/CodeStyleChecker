@@ -8,18 +8,18 @@ package info.woody.api.intellij.plugin.csct.bean
  */
 class CodeStyleCheckReport {
     CodeStyleCheckSummaryData summaryData
-    CodeStyleCheckDetailData detailDetailData
+    CodeStyleCheckDetailData detailData
     int fileCount
 
     /**
      * Constructor.
      * @param summaryData Summary data.
-     * @param detailDetailData Detail data.
+     * @param detailData Detail data.
      * @param fileCount File count.
      */
-    CodeStyleCheckReport(CodeStyleCheckSummaryData summaryData, CodeStyleCheckDetailData detailDetailData, int fileCount) {
+    CodeStyleCheckReport(CodeStyleCheckSummaryData summaryData, CodeStyleCheckDetailData detailData, int fileCount) {
         this.summaryData = summaryData
-        this.detailDetailData = detailDetailData
+        this.detailData = detailData
         this.fileCount = fileCount
     }
 

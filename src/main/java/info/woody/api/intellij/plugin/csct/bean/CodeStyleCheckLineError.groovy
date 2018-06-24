@@ -16,9 +16,10 @@ class CodeStyleCheckLineError extends CodeStyleCheckGlobalError {
      * @param lineNumber Line number.
      * @param error Error message.
      * @param args Error arguments.
+     * @param fileAbsolutePath File absolute path.
      */
-    CodeStyleCheckLineError(String line, int lineNumber, String error, String[] args) {
-        super(error, args)
+    CodeStyleCheckLineError(String line, int lineNumber, String error, String[] args, String fileAbsolutePath) {
+        super(error, args, fileAbsolutePath)
         this.line = line
         this.lineNumber = lineNumber
     }

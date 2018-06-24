@@ -10,8 +10,8 @@ import static info.woody.api.intellij.plugin.csct.util.RichTextMaker.newLink
  * @author Woody
  */
 class CodeStyleCheckDetailFileData extends CodeStyleCheckSummaryFileData {
-    private static final String LINE_BREAK_TAG = "<br>"
-    private static final int PADDING_WIDTH = 5
+    public static final String LINE_BREAK_TAG = "<br>"
+    private static final int PADDING_WIDTH = 6
     private String reportContent = ""
     String authorsKey
     List<CodeStyleCheckGlobalError> globalErrorList = new ArrayList<>()
@@ -43,11 +43,11 @@ class CodeStyleCheckDetailFileData extends CodeStyleCheckSummaryFileData {
      *
      * @return The formatted report.
      */
-    String getReportContent() {
+    String getReportForAuthor() {
         int totalErrorCount = getTotalErrorCount()
         if (/*!reportContent &&*/ totalErrorCount > 0) {
             StringBuilder reportContentBuilder = new StringBuilder()
-            reportContentBuilder.append("${newLink(filePath, filePath, fileName)} has ${totalErrorCount} error(s)")
+            reportContentBuilder.append("${newLink("${filePath}", fileName, fileName)} has ${totalErrorCount} error(s)")
             Closure<StringBuilder> lineBuilder = { reportContentBuilder.append(LINE_BREAK_TAG) }
             globalErrorList.each {
                 lineBuilder().append(newHighlight(String.format(it.error, it.args)))
@@ -55,11 +55,63 @@ class CodeStyleCheckDetailFileData extends CodeStyleCheckSummaryFileData {
             lineErrorList.each {
                 String lineNumber = it.lineNumber.toString()
                 String padding = lineNumber.padRight(PADDING_WIDTH).replace(lineNumber, '')
-                lineBuilder().append(newLink("${filePath}#${lineNumber}", lineNumber, lineNumber).concat(padding)
-                        .concat("${escapeContent(it.line.trim())} &lt;= ${newHighlight(String.format(it.error, it.args))}"))
+                lineBuilder().append(newLink("${filePath}#${lineNumber}", lineNumber, lineNumber)).append(padding)
+                        .append(": ${escapeContent(it.line.trim())} &lt;= ${newHighlight(String.format(it.error, it.args))}")
             }
-            reportContent = reportContentBuilder.toString()
+            reportContent = lineBuilder().toString()
         }
         reportContent
+    }
+
+    /**
+     *
+     * @param errorList
+     * @return
+     */
+    static String getReportForGlobalIssue(List<CodeStyleCheckGlobalError> errorList) {
+        StringBuilder reportContentBuilder = new StringBuilder()
+        Closure<StringBuilder> lineBuilder = { reportContentBuilder.append(LINE_BREAK_TAG) }
+        errorList.groupBy {
+            it.fileAbsolutePath
+        }.sort{
+            it.key
+        }.each {
+            String fileName = it.key.replaceFirst('^.*[/\\\\]', '')
+            it.value.each {
+                String filePath = it.fileAbsolutePath
+                reportContentBuilder.append(newLink("${filePath}", fileName, fileName))
+                        .append(" &lt;= ${newHighlight(String.format(it.error, it.args))}")
+            }
+            lineBuilder()
+        }
+        reportContentBuilder.toString()
+    }
+
+    /**
+     *
+     * @param errorList
+     * @return
+     */
+    static String getReportForLineIssue(List<CodeStyleCheckLineError> errorList) {
+        StringBuilder reportContentBuilder = new StringBuilder()
+        Closure<StringBuilder> lineBuilder = { reportContentBuilder.append(LINE_BREAK_TAG) }
+        errorList.groupBy {
+            it.fileAbsolutePath
+        }.sort{
+            it.key
+        }.each {
+            String fileName = it.key.replaceFirst('^.*[/\\\\]', '')
+            reportContentBuilder.append(fileName).append(LINE_BREAK_TAG)
+            it.value.each {
+                String filePath = it.fileAbsolutePath
+                String lineNumber = it.lineNumber.toString()
+                String padding = lineNumber.padRight(PADDING_WIDTH).replace(lineNumber, '')
+                reportContentBuilder.append(newLink("${filePath}#${lineNumber}", lineNumber, lineNumber)).append(padding)
+                        .append(": ${escapeContent(it.line.trim())} &lt;= ${newHighlight(String.format(it.error, it.args))}")
+                lineBuilder()
+            }
+            lineBuilder()
+        }
+        reportContentBuilder.toString()
     }
 }

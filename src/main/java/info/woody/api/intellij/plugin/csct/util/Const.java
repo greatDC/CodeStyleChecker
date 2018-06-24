@@ -1,4 +1,4 @@
-package info.woody.api.intellij.plugin.csct;
+package info.woody.api.intellij.plugin.csct.util;
 
 /**
  * Commonly used constants.

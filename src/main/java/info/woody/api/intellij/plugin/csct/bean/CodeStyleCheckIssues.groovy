@@ -1,5 +1,7 @@
 package info.woody.api.intellij.plugin.csct.bean
 
+import java.lang.reflect.Modifier
+
 /**
  * Error messages.
  *
@@ -21,22 +23,22 @@ class CodeStyleCheckIssues {
     public static final String LINE_EXTRAORDINARY_LONG = "The line is too long to be checked, please wrap properly then check again."
     public static final String LINE_INCORRECT_CREATION_DATE_FORMAT = "Date format for @since should be dd/mm/yyyy."
     public static final String LINE_DOCUMENTATION_FORMAT = "Documentation should start with a capital and end with `.`, `:`, `,`, `!`, `?` or `>`."
-    public static final String LINE_CODE_IN_DOCUMENTATION ="Only first letter is allowed to be a capital unless it's a proper noun or an acronym. Please use {@link ...} or {@code ...} if it refers to code."
+    public static final String LINE_CODE_IN_DOCUMENTATION = "Only first letter is allowed to be a capital unless it`s a proper noun or an acronym. Please use {@link ...} or {@code ...} if it refers to code."
     public static final String LINE_NO_DOCUMENTATION_CONTENT = "Documentation content must appear in the line after `/**`."
     public static final String LINE_COMMENTED_OUT_CODES = "The commented out codes should be removed."
     public static final String LINE_SINGLE_LINE_COMMENT_FORMAT = "The format of single line comment should be `// description`."
-    public static final String LINE_LEFT_CURLY_BRACE_LINE = "Left curly brace `{` isn't allowed to occupy a single line."
+    public static final String LINE_LEFT_CURLY_BRACE_LINE = "Left curly brace `{` isn`t allowed to occupy a single line."
     public static final String LINE_IMPORT_ASTERISK = "The asterisk `*` was found in import statement."
     public static final String LINE_NEVER_USED_IMPORTED = "This is imported but never used."
     public static final String LINE_CONSTANT_AS_LEFT_OPERAND = "Please use constant as left operand to avoid NullPointerException."
     public static final String LINE_ENUM_COMPARE = "Please use `==` instead of `equals` for enum comparison."
     public static final String LINE_UNUSED_FIELD = "You have an unused field declaration."
     public static final String LINE_UNIT_TEST_PRIVATE_FIELD = "The field in unit test should be private."
-    public static final String LINE_FIELD_MODIFIER_FOR_CONTROLLER = "You might need private if it's not referred outside."
-    public static final String LINE_FIELD_MODIFIER_FOR_SERVICE = "You might need protected if it's not referred outside."
+    public static final String LINE_FIELD_MODIFIER_FOR_CONTROLLER = "You might need private if it`s not referred outside."
+    public static final String LINE_FIELD_MODIFIER_FOR_SERVICE = "You might need protected if it`s not referred outside."
     public static final String LINE_FIELD_NAME_CONVENTION = "Field declaration should follow `FullClassName fullClassName`."
     public static final String LINE_LOGGER_NAME_CONVENTION = "Please use LOGGER as the variable name."
-    public static final String LINE_LOGGER_TARGET_CLASS = "LOGGER's target class should be this class."
+    public static final String LINE_LOGGER_TARGET_CLASS = "LOGGER`s target class should be this class."
     public static final String LINE_MISSING_FINAL = "Do you miss the keyword `final` or have redundant keyword `static`?"
     public static final String LINE_CONSTANT_NAME_CONVENTION = "All letters in constant should be uppercase."
     public static final String LINE_MISSING_UNIT_TEST = "Is the unit test missing?"
@@ -53,14 +55,45 @@ class CodeStyleCheckIssues {
     public static final String LINE_BAD_PRINT = "Please remove `print` or `println` in your code."
     public static final String LINE_EXCEED_140_CHARS = "This line exceeds 140 chars."
     public static final String LINE_MERGE_LINES = "Could previous line and this line be merged?"
-    public static final String LINE_ENUM_IMPORT = "Import enum type directly, e.g GenderEnum.MALE. Don't forget to clear useless import."
-    public static final String LINE_MULTIPLE_IDENTICAL_EXPRESSIONS = "Identical expressions used more than once should be extracted as a variable to eliminate duplication: %s"
-    public static final String LINE_REDUCE_MULTIPLE_CALCULATION = "Please define a variable to store the value of length/size."
-    public static final String LINE_OPTIMIZE_RETURN = "Please optimize multiple `return` into one, ternary operator might be helpful."
+    public static final String LINE_ENUM_IMPORT = "Import enum type directly, e.g GenderEnum.MALE. Don`t forget to clear useless import."
+    public static final String LINE_IDENTICAL_EXPRESSIONS = "Identical expressions can be extracted as a variable to eliminate repetition: %s"
+    public static final String LINE_REDUCE_MULTIPLE_CALCULATION = "Please use a variable to store the value of length/size."
+    public static final String LINE_OPTIMIZE_RETURN = "Please optimize multiple `return` into one; ternary operator might be helpful."
     public static final String LINE_MOVE_UPPER_ADVICE = "Could this line be moved upper?"
     public static final String LINE_REDUNDANT_GROOVY_SEMICOLON = "Semicolon is unnecessary in Groovy."
     public static final String LINE_REDUNDANT_GROOVY_PUBLIC = "Keyword `public` is redundant for non-static field in Groovy."
     public static final String LINE_IMPROPER_ACRONYM = "Please rename the variable containing acronym, e.g. getHTMLChar() -} getHtmlChar()."
     public static final String LINE_BOOLEAN_LITERAL_COMPARE = "Never compare with Boolean literal!"
     public static final String LINE_LOG_EXCEPTION = "Please log the error like `LOGGER.error(message, e)`."
+
+    public static Map<String, String> CHECK_ITEMS() {
+        Map<String, String> resultMap = [:]
+
+        CodeStyleCheckIssues.getDeclaredFields().findAll { field ->
+            int modifiers = field.getModifiers()
+            return Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers) && Modifier.isFinal(modifiers)
+        }.sort { f1, f2 ->
+            try {
+                char field1Char = f1.getName().charAt(0)
+                char field2Char = f2.getName().charAt(0)
+                int charCompareResult = Character.compare(field1Char, field2Char)
+                return (charCompareResult == 0) ? f1.get(null).toString() <=> f2.get(null).toString() : charCompareResult
+            } catch (IllegalAccessException e) {
+                e.printStackTrace()
+                return 0
+            }
+        }.each { field ->
+            try {
+                int modifiers = field.getModifiers()
+                if (Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers)
+                        && Modifier.isFinal(modifiers) && field.getName().matches('^(GLOBAL|LINE).*$')) {
+                    String checkItem = field.get(null).toString()
+                    resultMap.put(field.name, checkItem)
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace()
+            }
+        }
+        resultMap
+    }
 }

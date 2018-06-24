@@ -16,6 +16,8 @@ import groovy.io.FileType
  * @author Woody
  */
 class CodeStyleCheckImpl {
+    private static final int MAX_LINE_LENGTH_CAN_BE_CHECKED = 234
+
     public String MY_SOURCE_DIR = ""
     public List<String> FILES_TO_SKIP = ("""
 ConfigService.java
@@ -169,7 +171,7 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
             int trimmedLineLength = trimmedLine.length()
             int lineLength = line.length()
 
-            if (lineLength > 234) {
+            if (lineLength > MAX_LINE_LENGTH_CAN_BE_CHECKED) {
                 printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_EXTRAORDINARY_LONG)
                 return
             }
@@ -378,13 +380,22 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
             }
             if (debug('IDENTICAL EXPRESSIONS') && !isTest && index > 5 && index + 5 < totalLineCount) {
                 String contextLines = ""
-                ((index)..(index + 5)).each {
-                    contextLines += lines[it] + " "
+                boolean isTooLongTooCheck = false
+                int endOffset = 5
+                if (index + 9 < totalLineCount) {
+                    endOffset = 9
                 }
-                if (contextLines.matches('^.*[^.@](\\b[a-z]\\w+[.]\\w+[(][^)]*[)]).*\\1.*$')) {
+                ((index)..(index + endOffset)).each {
+                    String eachLine = lines[it]
+                    if (eachLine.length() > MAX_LINE_LENGTH_CAN_BE_CHECKED) {
+                        isTooLongTooCheck = true
+                    }
+                    contextLines += eachLine + " "
+                }
+                if (!isTooLongTooCheck && contextLines.matches('^.*[^.@](\\b[a-z]\\w+[.]\\w+[(][^)]*[)]).*\\1.*$')) {
                     String duplicateExpression = contextLines.replaceAll('^.*[^.@](\\b[a-z]\\w+[.]\\w+[(][^()]*[)]).*\\1.*$', '$1')
                     if (line.contains(duplicateExpression) && !trimmedLine.startsWith("//") && !line.toLowerCase().contains("random")) {
-                        printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_MULTIPLE_IDENTICAL_EXPRESSIONS, duplicateExpression)
+                        printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_IDENTICAL_EXPRESSIONS, duplicateExpression)
                     }
                 }
             }
@@ -446,14 +457,15 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
         }
         // statistics all in one
         ALL_ISSUE_COUNT++
+        CodeStyleCheckGlobalError globalError = new CodeStyleCheckGlobalError(error, args, PROD_FILE_ABSOLUTE_PATH)
         if (STATISTICS_ALL_IN_ONE[PROD_FILE_ABSOLUTE_PATH]) {
-            STATISTICS_ALL_IN_ONE[PROD_FILE_ABSOLUTE_PATH]['GLOBAL_ERRORS'] << new CodeStyleCheckGlobalError(error, args)
+            STATISTICS_ALL_IN_ONE[PROD_FILE_ABSOLUTE_PATH]['GLOBAL_ERRORS'] << globalError
         } else if (!STATISTICS_ALL_IN_ONE[PROD_FILE_ABSOLUTE_PATH]) {
             STATISTICS_ALL_IN_ONE[PROD_FILE_ABSOLUTE_PATH] = [
                     AUTHORS                : AUTHORS,
                     PROD_FILE_NAME         : PROD_FILE_NAME,
                     PROD_FILE_ABSOLUTE_PATH: PROD_FILE_ABSOLUTE_PATH,
-                    GLOBAL_ERRORS          : [new CodeStyleCheckGlobalError(error, args)],
+                    GLOBAL_ERRORS          : [globalError],
                     LINE_ERRORS            : []
             ]
         }
@@ -481,15 +493,16 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
         }
         // statistics all in one
         ALL_ISSUE_COUNT++
+        CodeStyleCheckLineError lineError = new CodeStyleCheckLineError(line, lineNumber, error, args, PROD_FILE_ABSOLUTE_PATH)
         if (STATISTICS_ALL_IN_ONE[PROD_FILE_ABSOLUTE_PATH]) {
-            STATISTICS_ALL_IN_ONE[PROD_FILE_ABSOLUTE_PATH]['LINE_ERRORS'] << new CodeStyleCheckLineError(line, lineNumber, error, args)
+            STATISTICS_ALL_IN_ONE[PROD_FILE_ABSOLUTE_PATH]['LINE_ERRORS'] << lineError
         } else if (!STATISTICS_ALL_IN_ONE[PROD_FILE_ABSOLUTE_PATH]) {
             STATISTICS_ALL_IN_ONE[PROD_FILE_ABSOLUTE_PATH] = [
                     AUTHORS                : AUTHORS,
                     PROD_FILE_NAME         : PROD_FILE_NAME,
                     PROD_FILE_ABSOLUTE_PATH: PROD_FILE_ABSOLUTE_PATH,
                     GLOBAL_ERRORS          : [],
-                    LINE_ERRORS            : [new CodeStyleCheckLineError(line, lineNumber, error, args)]
+                    LINE_ERRORS            : [lineError]
             ]
         }
     }
@@ -514,11 +527,7 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
             if (globalErrors) summaryData.globalErrorsGroupByFilePath.put(filePath, globalErrors)
             List lineErrors = fileDetailMap.get('LINE_ERRORS')
             if (lineErrors) summaryData.lineErrorsGroupByFilePath.put(filePath, lineErrors)
-            if (!globalErrors && !lineErrors) {
-                summaryData.fileCountWithoutIssues++
-            } else {
-                summaryData.fileCountWithIssues++
-            }
+            summaryData.fileCountWithIssues++
             CodeStyleCheckDetailFileData detailFileData = new CodeStyleCheckDetailFileData(fileName, filePath, authorsKey)
             detailFileData.globalErrorList = globalErrors
             detailFileData.lineErrorList = lineErrors
@@ -659,3 +668,7 @@ src/main/java/com/openjaw/api/WebApplicationConfig.java
 // static should come before non-static
 // indent badly
 // disable the specified check items
+// identical expression cannot be extracted if it's inside java stream
+// add issue title for details of same issue category
+// line number for details of same issue category should be padded
+// auto expand folded lines

@@ -3,26 +3,25 @@ package info.woody.api.intellij.plugin.csct;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.LogicalPosition;
 import com.intellij.openapi.editor.ScrollType;
-import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.fileEditor.FileEditorProvider;
-import com.intellij.openapi.fileEditor.OpenFileDescriptor;
-import com.intellij.openapi.fileEditor.ex.FileEditorProviderManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VirtualFile;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckDetailFileData;
+import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckGlobalError;
+import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckLineError;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckReport;
+import info.woody.api.intellij.plugin.csct.util.CodeStyleCheckEnum.SummaryLinkType;
 
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
 import javax.swing.event.HyperlinkEvent;
-import java.nio.file.Paths;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static info.woody.api.intellij.plugin.csct.CodeStyleCheckingTool.DETAILS_TEXT_PANE;
 import static info.woody.api.intellij.plugin.csct.CodeStyleCheckingTool.REPORT_INFO;
 import static info.woody.api.intellij.plugin.csct.CodeStyleCheckingTool.SUMMARY_TEXT_PANE;
+import static info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckDetailFileData.LINE_BREAK_TAG;
+import static info.woody.api.intellij.plugin.csct.util.EditorUtils.openFileInEditor;
 
 /**
  * Scanning result view in the tool window.
@@ -76,26 +75,11 @@ public class CodeStyleCheckResultView {
             } else {
                 path = description;
             }
-            VirtualFile virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(Paths.get(path).toFile());
-            if (null != virtualFile && virtualFile.isValid()) {
-                FileEditorProvider[] providers = FileEditorProviderManager.getInstance().getProviders(project, virtualFile);
-                if (providers.length > 0) {
-                    OpenFileDescriptor openFileDescriptor = new OpenFileDescriptor(project, virtualFile);
-                    Editor editor = FileEditorManager.getInstance(project).openTextEditor(openFileDescriptor, false);
-                    editor.getCaretModel().moveToLogicalPosition(new LogicalPosition(lineIndex, 0));
-                    editor.getScrollingModel().scrollToCaret(ScrollType.CENTER);
-                    editor.getSelectionModel().selectLineAtCaret();
-                    /*
-                    PropertiesComponent.getInstance().
-                    CaretModel caretModel = editor.getCaretModel();
-                    String text = summaryTextPane.getText();
-                    int fromIndex = text.indexOf(description);
-                    int caretPos = text.indexOf(description.replaceAll("^.*[\\\\/]", ""), fromIndex + description.length());
-                    summaryTextPane.setCaretPositionPosition(caretPos);
-                    caretModel.moveToLogicalPosition(new LogicalPosition(lineNumber -1, 0));
-                    editor.getScrollingModel().scrollToCaret(ScrollType.CENTER);
-                    */
-                }
+            Editor editor = openFileInEditor(path, project);
+            if (editor != null) {
+                editor.getCaretModel().moveToLogicalPosition(new LogicalPosition(lineIndex, 0));
+                editor.getScrollingModel().scrollToCaret(ScrollType.CENTER);
+                editor.getSelectionModel().selectLineAtCaret();
             }
         });
 
@@ -103,13 +87,43 @@ public class CodeStyleCheckResultView {
             if (hyperlinkEvent.getEventType() != HyperlinkEvent.EventType.ACTIVATED) {
                 return;
             }
-            CodeStyleCheckReport report = (CodeStyleCheckReport) consolePanel.getClientProperty(REPORT_INFO);
-            String authorsKey = hyperlinkEvent.getDescription();
-            String details = report.getDetailDetailData().getFileDataList().stream()
-                    .filter(fileData -> fileData.getAuthorsKey().equals(authorsKey))
-                    .map(CodeStyleCheckDetailFileData::getReportContent).collect(Collectors.joining("<hr>"));
-            detailsTextPane.setText(String.format("<pre>%s</pre>", details));
-            detailsTextPane.setCaretPosition(0);
+            String description = hyperlinkEvent.getDescription();
+            if (description.contains("#")) {
+                String[] hrefMeta = description.split("#");
+                String linkType = hrefMeta[0];
+                String linkValue = hrefMeta[1];
+
+                CodeStyleCheckReport report = (CodeStyleCheckReport) consolePanel.getClientProperty(REPORT_INFO);
+                List<CodeStyleCheckDetailFileData> fileDataList = report.getDetailData().getFileDataList();
+                if (SummaryLinkType.ISSUE.name().equals(linkType)) {
+                    String issueItem = linkValue;
+                    List<CodeStyleCheckGlobalError> allGlobalIssues = fileDataList.stream()
+                            .map(CodeStyleCheckDetailFileData::getGlobalErrorList).flatMap(List::stream)
+                            .filter(codeStyleCheckGlobalError -> codeStyleCheckGlobalError.getError().equals(issueItem))
+                            .collect(Collectors.toList());
+                    List<CodeStyleCheckLineError> allLineIssues = fileDataList.stream()
+                            .map(CodeStyleCheckDetailFileData::getLineErrorList).flatMap(List::stream)
+                            .filter(codeStyleCheckLineError -> codeStyleCheckLineError.getError().equals(issueItem))
+                            .collect(Collectors.toList());
+                    String details = "";
+                    if (!allGlobalIssues.isEmpty()) {
+                        details = CodeStyleCheckDetailFileData.getReportForGlobalIssue(allGlobalIssues);
+                    } else if (!allLineIssues.isEmpty()) {
+                        details = CodeStyleCheckDetailFileData.getReportForLineIssue(allLineIssues);
+                    }
+                    detailsTextPane.setText(String.format("<pre>%s</pre>", details));
+                    detailsTextPane.setCaretPosition(0);
+                } else if (SummaryLinkType.AUTHOR.name().equals(linkType)) {
+                    String authorsKey = linkValue;
+                    String details = fileDataList.stream()
+                            .filter(fileData -> fileData.getAuthorsKey().equals(authorsKey))
+                            .map(CodeStyleCheckDetailFileData::getReportForAuthor).collect(Collectors.joining(LINE_BREAK_TAG));
+                    detailsTextPane.setText(String.format("<pre>%s</pre>", details));
+                    detailsTextPane.setCaretPosition(0);
+                }
+            } else {
+                openFileInEditor(description, project);
+            }
         });
     }
 

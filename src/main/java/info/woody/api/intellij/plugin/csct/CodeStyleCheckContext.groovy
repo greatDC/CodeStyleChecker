@@ -22,17 +22,21 @@ class CodeStyleCheckContext {
      *
      * @param configurationFile Configuration file.
      * @param sourceDir Source code directory.
-     * @return Context information.
+     * @return Context information; {@code null} if some errors happen.
      */
     static CodeStyleCheckContext newInstance(File configurationFile, String sourceDir) {
-        CodeStyleCheckContext context = new CodeStyleCheckContext()
-        context.rawXml = new XmlSlurper().parse(configurationFile)
-        context.sourceDir = sourceDir
-        String configuredSourceDir = context.rawXml.SourceDir.text()
-        if (new File(configuredSourceDir).exists()) {
-            context.sourceDir = configuredSourceDir
+        try {
+            CodeStyleCheckContext context = new CodeStyleCheckContext()
+            context.rawXml = new XmlSlurper().parse(configurationFile)
+            context.sourceDir = sourceDir
+            String configuredSourceDir = context.rawXml.SourceDir.text()
+            if (new File(configuredSourceDir).exists()) {
+                context.sourceDir = configuredSourceDir
+            }
+            return context
+        } catch (e) {
+            return null
         }
-        context
     }
 
     String MY_SOURCE_DIR() {
