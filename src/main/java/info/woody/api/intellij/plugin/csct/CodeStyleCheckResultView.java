@@ -17,9 +17,9 @@ import javax.swing.event.HyperlinkEvent;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static info.woody.api.intellij.plugin.csct.CodeStyleCheckingTool.DETAILS_TEXT_PANE;
-import static info.woody.api.intellij.plugin.csct.CodeStyleCheckingTool.REPORT_INFO;
-import static info.woody.api.intellij.plugin.csct.CodeStyleCheckingTool.SUMMARY_TEXT_PANE;
+import static info.woody.api.intellij.plugin.csct.CodeStyleCheckTool.DETAILS_TEXT_PANE;
+import static info.woody.api.intellij.plugin.csct.CodeStyleCheckTool.REPORT_INFO;
+import static info.woody.api.intellij.plugin.csct.CodeStyleCheckTool.SUMMARY_TEXT_PANE;
 import static info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckDetailFileData.LINE_BREAK_TAG;
 import static info.woody.api.intellij.plugin.csct.util.EditorUtils.openFileInEditor;
 

@@ -12,6 +12,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
+      <p>24.06.2018 - Now resulting report support 2 approaches to view issues: view by author; view by issue type.</p>
       <p>21.06.2018 - Support navigation within editor by line number.</p>
       <p>20.06.2018 - Totally we support 54 code style check items for Java and Groovy.</p>
       <p>05.06.2018 - Initial version for release. Please contact me if any issues.</p>
@@ -36,9 +37,9 @@
 
     <actions>
         <!-- Add your actions here -->
-        <action id="CodeStyleCheckingTool"
-                class="info.woody.api.intellij.plugin.csct.CodeStyleCheckingTool"
-                text="Code Style Check Tool" description="Code Style Check Tool">
+        <action id="CodeStyleCheckTool"
+                class="info.woody.api.intellij.plugin.csct.CodeStyleCheckTool"
+                text="Code Style Check" description="Code Style Check">
             <add-to-group group-id="AnalyzeMenu" anchor="first"/>
         </action>
     </actions>

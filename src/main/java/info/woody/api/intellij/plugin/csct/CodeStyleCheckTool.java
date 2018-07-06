@@ -30,7 +30,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.ToIntFunction;
 
 import static info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckDetailFileData.LINE_BREAK_TAG;
 import static info.woody.api.intellij.plugin.csct.util.Const.LINE_SEPARATOR;
@@ -47,7 +46,7 @@ import static java.util.stream.Collectors.joining;
  *
  * @author Woody
  */
-public class CodeStyleCheckingTool extends AnAction {
+public class CodeStyleCheckTool extends AnAction {
 
     public static final String SUMMARY_TEXT_PANE = "summaryTextPane";
     public static final String DETAILS_TEXT_PANE = "detailsTextPane";
@@ -66,11 +65,11 @@ public class CodeStyleCheckingTool extends AnAction {
                     .filter(entry -> entry.getFile().getPath().endsWith(DEFAULT_MODULE_CONTENT)).findAny();
         }
         Path projectPath = Paths.get(e.getProject().getBaseDir().getPath());
-        Path configurationFilePath = Paths.get(projectPath + "/CodeStyleCheckingTool.xml");
+        Path configurationFilePath = Paths.get(projectPath + "/CodeStyleCheckTool.xml");
         File configurationFile = configurationFilePath.toFile();
         if (Files.notExists(configurationFilePath)) {
             int exitCode = Messages.showOkCancelDialog(
-                    "The configuration file CodeStyleCheckingTool.xml isn't in project. Do you want to create now?",
+                    "The configuration file CodeStyleCheckTool.xml isn't in project. Do you want to create now?",
                     "", Messages.getWarningIcon());
             if (Messages.OK == exitCode && createConfigurationFile(configurationFilePath)) {
                 openFileInEditor(configurationFile.getAbsolutePath(), e.getProject());
@@ -91,12 +90,12 @@ public class CodeStyleCheckingTool extends AnAction {
             openFileInEditor(configurationFile.getAbsolutePath(), e.getProject());
             return;
         }
-        CodeStyleCheckImpl codeStyleCheck = new CodeStyleCheckImpl();
+        CodeStyleCheckRule codeStyleCheck = new CodeStyleCheckRuleImpl();
         codeStyleCheck.MY_SOURCE_DIR = context.MY_SOURCE_DIR();
         codeStyleCheck.FILENAME_PATTERN_TO_SKIP = context.FILENAME_PATTERN_TO_SKIP();
         codeStyleCheck.FILES_TO_SKIP = context.FILES_TO_SKIP();
         codeStyleCheck.GIT_FILES_TO_MERGE = context.GIT_FILES_TO_MERGE();
-        CodeStyleCheckReport report = codeStyleCheck.doCheck().calculateStatistics();
+        CodeStyleCheckReport report = codeStyleCheck.doCheck();
 
         ToolWindow codeStyleCheckResultView = ToolWindowManager.getInstance(e.getProject()).getToolWindow("Code scanning results");
         JComponent rootComponent = codeStyleCheckResultView.getContentManager().getSelectedContent().getComponent();

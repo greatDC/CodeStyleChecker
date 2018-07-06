@@ -35,7 +35,7 @@ class CodeStyleCheckContext {
             }
             return context
         } catch (e) {
-            return null
+            throw e
         }
     }
 

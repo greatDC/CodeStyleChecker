@@ -7,6 +7,7 @@ package info.woody.api.intellij.plugin.csct.bean
  * @since 15/06/2018
  */
 class CodeStyleCheckReport {
+
     CodeStyleCheckSummaryData summaryData
     CodeStyleCheckDetailData detailData
     int fileCount
