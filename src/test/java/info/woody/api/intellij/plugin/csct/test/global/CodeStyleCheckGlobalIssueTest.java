@@ -1,22 +1,11 @@
 package info.woody.api.intellij.plugin.csct.test.global;
 
-import info.woody.api.intellij.plugin.csct.CodeStyleCheckContext;
-import info.woody.api.intellij.plugin.csct.CodeStyleCheckRule;
-import info.woody.api.intellij.plugin.csct.CodeStyleCheckRuleImpl;
-import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckDetailFileData;
-import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckGlobalError;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckIssues;
-import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckReport;
 import info.woody.api.intellij.plugin.csct.test.BaseUnitTest;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.File;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import static info.woody.api.intellij.plugin.csct.test.BaseUnitTest.SAMPLE_PROJECT_SRC;
 
 public class CodeStyleCheckGlobalIssueTest extends BaseUnitTest {
 

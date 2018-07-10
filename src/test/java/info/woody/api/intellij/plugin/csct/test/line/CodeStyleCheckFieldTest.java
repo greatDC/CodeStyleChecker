@@ -19,7 +19,7 @@ public class CodeStyleCheckFieldTest extends BaseUnitTest {
 
     @Test
     public void groovyField() {
-        rule.GIT_FILES_TO_MERGE = SAMPLE_PROJECT_SRC + "/src/main/groovy/info/woody/api/intellij/plugin/csct/sample/groovy/field/SampleGroovyFieldIssue.groovy";
+        rule.GIT_FILES_TO_MERGE = SAMPLE_PROJECT_SRC + "/src/main/groovy/info/woody/api/intellij/plugin/csct/sample/groovy/field/SampleGroovyFieldIssueService.groovy";
         List<String> errors = getLineErrors();
 
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_GROOVY_PUBLIC_IN_FIELD));

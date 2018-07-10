@@ -76,7 +76,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                     !trimmedSecureLine.matches('^.* (class|interface|enum) .*$')) {
                 checkField(content, lines, index, line, trimmedLine, trimmedSecureLine, isTest)
             } else if (debug('CLASS') && line.matches('^.*(private|protected|public)?[^(]*(class|interface|enum)[^(.\'="]*$')) {
-                checkClassInterfaceEnum(lines, index, line, isTest)
+                checkClassInterfaceEnum(lines, index, line, trimmedLine, isTest)
             } else if (debug('CONSTRUCTOR') && !trimmedSecureLine.endsWith(";") && !trimmedSecureLine.contains("=")
                     && trimmedSecureLine.matches("^.*${PROD_FILE_NAME.replaceFirst('[.].*$', '')}[(].*")) {
                 checkConstructor(lines, index, line)
@@ -228,7 +228,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
     private void checkDocumentation(String[] lines, int index, String line, String trimmedLine) {
         LINE_META.DOCUMENTATION = true
         String lineWithoutHtml = trimmedLine.replaceAll("<[^>]+>", "")
-        if (lineWithoutHtml.matches("[ */]*") || lineWithoutHtml.contains('@author') || lineWithoutHtml.contains('@see')) {
+        if (lineWithoutHtml.matches("[ */]*") || lineWithoutHtml.startsWith('* @')) {
         } else if (lineWithoutHtml.contains('@since')) {
             if (!lineWithoutHtml.matches('''^.*\\b([012][0-9]|30|31)/(0[1-9]|1[0-2])/201[0-9]\\b.*$''')) {
                 printWarning(lineWithoutHtml, LINE_NUMBER, CodeStyleCheckIssues.LINE_INCORRECT_CREATION_DATE_FORMAT)
@@ -241,15 +241,15 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                 .matches('^[*] (@\\w+\\s+\\w+\\s+)?[A-Z][a-z].*[A-Z][a-z].*$')) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_CODE_IN_DOCUMENTATION)
         }
-        String nextLine = lines[index + 1].trim()
-        if (trimmedLine == "/**" && (nextLine == '*' || nextLine == '*/' || nextLine.startsWith('* @'))) {
+        String nextTrimmedLine = lines[index + 1].trim()
+        if (trimmedLine == "/**" && (nextTrimmedLine == '*' || nextTrimmedLine == '*/' || nextTrimmedLine.startsWith('* @'))) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_NO_DOCUMENTATION_CONTENT)
         }
     }
 
-    private void checkClassInterfaceEnum(String[] lines, int index, String line, boolean isTest) {
+    private void checkClassInterfaceEnum(String[] lines, int index, String line,  String trimmedLine, boolean isTest) {
         LINE_META.CLASS = true
-        if (!isTest && !line.contains("interface") && !line.contains("abstract") && !line.startsWith("Base") &&
+        if (!isTest && !line.contains("interface") && !line.contains("abstract") && !line.contains("Base") &&
                 !ALL_FILES_NAME.contains(PROD_FILE_NAME.replaceAll('.(groovy|java)$', 'Test.java')) &&
                 !ALL_FILES_NAME.contains(PROD_FILE_NAME.replaceAll('.(groovy|java)$', 'Test.groovy'))) {
             if (!lines[0].matches('^.*\\b(models?|beans?|pojos?)\\b.*$')) {
@@ -259,7 +259,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         if (!(lines as List).subList(0, index).any { it.trim().startsWith("*") }) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_CLASS_MISSING_DOCUMENTATION)
         }
-        if (PROD_FILE_NAME.endsWith('.groovy') && line.trim().startsWith('public ')) {
+        if (PROD_FILE_NAME.endsWith('.groovy') && trimmedLine.startsWith('public ')) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_GROOVY_PUBLIC_IN_CLASS)
         }
     }
@@ -321,19 +321,15 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
 
     private void checkConstructor(String[] lines, int index, String line) {
         LINE_META.CONSTRUCTOR = true
-        if (LINE_NUMBER > 3) {
-            if (!lines[index - 2].trim().startsWith("*")) {
-                printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_CONSTRUCTOR_MISSING_DOCUMENTATION)
-            }
+        if (LINE_NUMBER > 3 && !lines[index - 2].trim().startsWith("*")) {
+            printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_CONSTRUCTOR_MISSING_DOCUMENTATION)
         }
     }
 
     private void checkMethod(String content, String[] lines, int index, String line, String trimmedLine, boolean isTest) {
         LINE_META.METHOD = true
-        if (LINE_NUMBER > 3) {
-            if (!lines[index - 1].contains("@Override") && !lines[index - 2].contains("*")) {
-                printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_METHOD_MISSING_DOCUMENTATION)
-            }
+        if (LINE_NUMBER > 3 && !lines[index - 1].contains("@Override") && !lines[index - 2].contains("*")) {
+            printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_METHOD_MISSING_DOCUMENTATION)
         }
         String methodName = trimmedLine.replaceAll('^.*\\b([\\w+$]+)[(].+$', '$1')
         if ((line.contains('private ') || line.contains('protected ')) &&

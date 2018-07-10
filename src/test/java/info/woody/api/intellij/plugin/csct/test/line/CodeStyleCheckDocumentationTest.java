@@ -25,7 +25,7 @@ public class CodeStyleCheckDocumentationTest extends BaseUnitTest {
         List<String> errors = getLineErrors();
 
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_NO_DOCUMENTATION_CONTENT));
-        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_DOCUMENTATION_FORMAT));
+        Assert.assertEquals(3, errors.stream().filter(error -> error.equals(CodeStyleCheckIssues.LINE_DOCUMENTATION_FORMAT)).count());
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_INCORRECT_CREATION_DATE_FORMAT));
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_CODE_IN_DOCUMENTATION));
     }
