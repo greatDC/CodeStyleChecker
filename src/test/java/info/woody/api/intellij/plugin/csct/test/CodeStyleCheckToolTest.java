@@ -1,21 +1,13 @@
 package info.woody.api.intellij.plugin.csct.test;
 
 import info.woody.api.intellij.plugin.csct.CodeStyleCheckException;
-import info.woody.api.intellij.plugin.csct.CodeStyleCheckRule;
-import info.woody.api.intellij.plugin.csct.CodeStyleCheckRuleImpl;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckGlobalError;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckReport;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class CodeStyleCheckToolTest extends BaseUnitTest {
 

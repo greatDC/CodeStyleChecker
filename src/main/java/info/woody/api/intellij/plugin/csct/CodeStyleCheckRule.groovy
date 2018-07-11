@@ -3,7 +3,6 @@ package info.woody.api.intellij.plugin.csct
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckDetailData
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckDetailFileData
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckGlobalError
-import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckIssues
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckLineError
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckReport
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckSummaryData
@@ -27,7 +26,7 @@ abstract class CodeStyleCheckRule {
     // Sample: "git diff --name-only HEAD origin/SPRINT_BOEING_727 | grep -e java$ -e groovy$"
     public String GIT_FILES_TO_MERGE = ''
     /**
-     * Key is file absolute path and value is file detail of Map type.
+     * Key is file absolute path and value is file detail of {@link Map} type.
      */
     protected Map STATISTICS_ALL_IN_ONE = [:]
     protected boolean IS_DEBUG = false
@@ -42,7 +41,6 @@ abstract class CodeStyleCheckRule {
     protected String PROD_FILE_NAME = null
     protected String PROD_FILE_ABSOLUTE_PATH = null
     protected int LINE_NUMBER = 0
-    protected Map LINE_META
     protected List AUTHORS
     protected StringBuilder outputBuilder = new StringBuilder(9999)
     protected boolean ENABLE_CONSOLE_REPORT = false
@@ -55,9 +53,9 @@ abstract class CodeStyleCheckRule {
     CodeStyleCheckReport doCheck() {
         File dir = new File(MY_SOURCE_DIR?:"")
         if (!dir.exists() || dir.isFile()) {
-            throw new CodeStyleCheckException("`SourceDir` in configuration file has to be a valid file path: " + dir.getAbsolutePath());
+            throw new CodeStyleCheckException("`SourceDir` in configuration file has to be a valid file path: " + dir.getAbsolutePath())
         }
-        Pattern patternFileNameToSkip = Pattern.compile(FILENAME_PATTERN_TO_SKIP?:"");
+        Pattern patternFileNameToSkip = Pattern.compile(FILENAME_PATTERN_TO_SKIP?:"")
         List<String> filesToSkip = FILES_TO_SKIP ?: []
         List<String> gitFilesToMerge = (GIT_FILES_TO_MERGE ?: "").split('(?s)\\r?\\n').toList().collect {
             it.replaceAll('^.*[/\\\\]', '')
@@ -88,7 +86,7 @@ abstract class CodeStyleCheckRule {
      * @param file File to check.
      * @param fileNumber File number.
      */
-    protected abstract void findPotentialIssues(File file, fileNumber);
+    protected abstract void findPotentialIssues(File file, fileNumber)
 
     /**
      * Print the global warning message.
@@ -268,7 +266,7 @@ abstract class CodeStyleCheckRule {
      * @return The current line text without string literals.
      */
     protected static String stripStringPattern(line) {
-        line.replaceAll('"(\\\\"|[^"])+?"', '""').replaceAll("'(\\\\'|[^'])+?'", "''")
+        line.replaceAll('"(\\\\"|[^"])*?"', '""').replaceAll("'(\\\\'|[^'])*?'", "''")
     }
 
     /**
@@ -279,7 +277,6 @@ abstract class CodeStyleCheckRule {
      */
     protected boolean debug(topic) {
         if (IS_DEBUG) {
-            println "${LINE_NUMBER}: ${topic}"
             __println "${LINE_NUMBER}: ${topic}"
         }
         true
@@ -291,7 +288,7 @@ abstract class CodeStyleCheckRule {
      * @param text Text to output.
      */
     protected void __println(String text) {
-        __print((null == text ? "" : text) + "\n")
+        __print((text?:"") + "\n")
     }
 
     /**

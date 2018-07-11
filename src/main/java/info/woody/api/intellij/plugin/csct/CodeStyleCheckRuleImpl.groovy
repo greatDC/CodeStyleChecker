@@ -10,7 +10,8 @@ import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckIssues
  */
 class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
 
-    protected  static final int MAX_LINE_LENGTH_CAN_BE_CHECKED = 234
+    protected static final int MAX_LINE_LENGTH_CAN_BE_CHECKED = 234
+    private Map LINE_META
 
     /**
      * Check the file to report the found issues.
@@ -36,7 +37,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         AUTHORS = []
         for (String line : lines) {
             if (line.length() > MAX_LINE_LENGTH_CAN_BE_CHECKED) {
-                continue;
+                continue
             }
             boolean isDocPattern = line.trim().startsWith("*")
             if (isDocPattern && line.matches('^(?i).*created? by ([\\w.0]+).*$')) { // extract author from comment
@@ -64,18 +65,16 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
             String trimmedSecureLine = secureLine.trim()
             int trimmedLineLength = trimmedLine.length()
 
-            if (trimmedLine == '}') {
-                return // do nothing
-            } else if (debug('ANNOTATION') && trimmedLine.startsWith('@')) {
+            if (trimmedLine == '}' && trimmedLine.startsWith('@')) {
                 return // do nothing
             } else if (debug('DOCUMENTATION') && trimmedLine.matches('^/?[*].*$')) {
                 checkDocumentation(lines, index, line, trimmedLine)
             } else if (debug('SINGLE LINE COMMENT') && line.matches('^\\s*//.*$')) {
-                checkSingleLineComment(line, trimmedLine)
+                checkSingleLineComment(lines, totalLineCount, index, line, trimmedLine)
             } else if (debug('IMPORT STATEMENT') && trimmedLine.startsWith('import ')) {
                 checkImport(content, line)
             } else if (debug('FIELD') && trimmedSecureLine.matches('^(private|protected|public)[^{]+$') &&
-                    !trimmedSecureLine.matches('^.* (class|interface|enum) .*$')) {
+                    !trimmedSecureLine.matches('^.* (class|interface|enum|abstract) .*$')) {
                 checkField(content, lines, index, line, trimmedLine, trimmedSecureLine, isTest)
             } else if (debug('CLASS') && line.matches('^.*(private|protected|public)?[^(]*(class|interface|enum)[^(.\'="]*$')) {
                 checkClassInterfaceEnum(lines, index, line, trimmedLine, isTest)
@@ -159,23 +158,23 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                 if (debug('ENUM IMPORTING') && trimmedSecureLine.matches('^.*\\b[A-Z]\\w+[.]\\w+Enum.*$')) {
                     printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_ENUM_IMPORT)
                 }
-                if (debug('IDENTICAL EXPRESSIONS') && !isTest && index > 5 && index + 5 < totalLineCount) {
+                if (debug('IDENTICAL EXPRESSIONS') && !isTest && index > 4 && index + 4 < totalLineCount) {
                     StringBuilder contextBuilder = new StringBuilder()
-                    int endOffset = 5
-                    if (index + 9 < totalLineCount) {
-                        endOffset = 9
+                    int endOffset = 4
+                    if (index + 8 < totalLineCount) {
+                        endOffset = 8
                     }
                     ((index)..(index + endOffset)).each {
                         String eachLine = lines[it]
-                        if (eachLine.length() > MAX_LINE_LENGTH_CAN_BE_CHECKED && !eachLine.trim().matches('^(//|[*]).*$')) {
-                            return
+                        if (eachLine.length() < MAX_LINE_LENGTH_CAN_BE_CHECKED && !eachLine.trim().matches('^(//|/?[*]).*$')) {
+                            contextBuilder.append(eachLine).append(" ")
                         }
-                        contextBuilder.append(eachLine).append(" ")
                     }
-                    String contextLines = contextBuilder.toString();
-                    if (contextLines.matches('^.*[^.@](\\b[a-z]\\w+[.]\\w+[(][^)]*[)]).*\\1.*$')) {
+                    String contextLines = contextBuilder.toString(); // pattern: var.call()
+                    if (contextLines.matches('^.*[^.@](\\b[a-z]\\w+[.]\\w+[(][^()]*[)]).*\\1.*$')) {
                         String duplicateExpression = contextLines.replaceAll('^.*[^.@](\\b[a-z]\\w+[.]\\w+[(][^()]*[)]).*\\1.*$', '$1')
-                        if (line.contains(duplicateExpression) && !trimmedLine.startsWith("//") && !line.toLowerCase().contains("random")) {
+                        if (line.contains(duplicateExpression) && !line.toLowerCase().contains("random")
+                                && !line.toLowerCase().contains("stream") && !line.toLowerCase().contains("append")) {
                             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_IDENTICAL_EXPRESSIONS, duplicateExpression)
                         }
                     }
@@ -184,7 +183,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                         (trimmedSecureLine.contains('.length') || trimmedSecureLine.contains('.size()'))) {
                     printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_REDUCE_MULTIPLE_CALCULATION)
                 }
-                if (debug('RETURN STATEMENT') && lineLength - LINE_NUMBER > 2 &&
+                if (debug('RETURN STATEMENT') && index > 2 && totalLineCount - LINE_NUMBER > 2 && lines[index - 1].trim().startsWith('if ') &&
                         trimmedLine.startsWith('return') && lines[index + 2].trim().startsWith('return')) {
                     printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_OPTIMIZE_RETURN)
                 }
@@ -228,16 +227,24 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
 
     private void checkDocumentation(String[] lines, int index, String line, String trimmedLine) {
         LINE_META.DOCUMENTATION = true
-        String nextTrimmedLine = lines[index + 1].trim()
+        int nextLineIndex = index + 1
+        String nextTrimmedLine = ''
+        if (nextLineIndex < lines.length) {
+            nextTrimmedLine = lines[nextLineIndex].trim()
+        }
         if (trimmedLine == "/**" && (nextTrimmedLine == '*' || nextTrimmedLine == '*/' || nextTrimmedLine.startsWith('* @'))) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_NO_DOCUMENTATION_CONTENT)
         }
         String lineWithoutHtml = trimmedLine.replaceAll("<[^>]+>", "")
-        if (trimmedLine.startsWith('/**') || trimmedLine.endsWith('*/')) {
+        if (trimmedLine.startsWith('/**') || trimmedLine.endsWith('*/') || trimmedLine.contains('@author')) {
             return
         } else if (lineWithoutHtml.contains('@since')) {
             if (!lineWithoutHtml.matches('''^.*\\b([012][0-9]|30|31)/(0[1-9]|1[0-2])/201[0-9]\\b.*$''')) {
                 printWarning(lineWithoutHtml, LINE_NUMBER, CodeStyleCheckIssues.LINE_INCORRECT_CREATION_DATE_FORMAT)
+            }
+        } else if (trimmedLine == '*') {
+            if (nextTrimmedLine == '*') {
+                printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_DOCUMENTATION_REDUNDANT_EMPTY_LINES)
             }
         } else if (!trimmedLine.replaceFirst('^[*] (@(param|throws) \\w+|@return)?', '').trim()
                 .matches('^[0-9A-Z{<].*[.:,;!?>]$')) {
@@ -280,7 +287,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                 !codesAfterConstructor.matches('(?s)^.*\\b' + fieldName + '\\b.*$')))) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_UNUSED_FIELD)
         }
-        if (debug('PRIVATE FIELD') && isTest && line.contains("protected ")) {
+        if (debug('PRIVATE FIELD') && isTest && line.contains("protected ") && !PROD_FILE_NAME.contains('Base')) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_UNIT_TEST_PRIVATE_FIELD)
         }
         if (debug('REFERENCE FIELD') && !isTest && !line.contains("LOGGER") &&
@@ -329,7 +336,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_METHOD_MISSING_DOCUMENTATION)
         }
         String methodName = trimmedLine.replaceAll('^.*\\b([\\w+$]+)[(].+$', '$1')
-        if ((line.contains('private ') || line.contains('protected ')) &&
+        if ((line.contains('private ') || line.contains('protected ')) && !PROD_FILE_NAME.contains('Base') &&
                 !content.replaceFirst('\\b' + methodName.replace('$', '\\$') + '\\b', '').contains(methodName)) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_UNUSED_METHOD)
         }
@@ -397,12 +404,33 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         }
     }
 
-    private void checkSingleLineComment(String line, String trimmedLine) {
+    private void checkSingleLineComment(String[] lines, int totalLineCount, int index, String line, String trimmedLine) {
         LINE_META.COMMENT = true
         if (trimmedLine.matches('^.*\\b(\\w+[.]\\w+[(]|\\w+ ?= ?\\w+[.]\\w+|if ?[(]|\\w+[(][)]).*$')) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_COMMENTED_OUT_CODES)
-        } else if (trimmedLine.matches('^\\s*//+[^ ].+$')) {
-            printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_SINGLE_LINE_COMMENT_FORMAT)
+        } else {
+            int nextLineIndex = index + 1
+            if (nextLineIndex < totalLineCount) {
+                String nextLine = lines[nextLineIndex].trim()
+                if (!nextLine.startsWith('//')) {
+                    List<String> commentWords = trimmedLine.replace('//', '').trim().split('\\W').findAll {
+                        String word = it.trim()
+                        word.length() && !word.matches('^(then?|an?|to|s|its?|that|and|so|f?or|because|since|of)$')
+                    }
+                    int commentWordCountInCodes = 0
+                    commentWords.each {
+                        if (nextLine.toLowerCase().contains(it.toLowerCase())) {
+                            commentWordCountInCodes++
+                        }
+                    }
+                    if (commentWordCountInCodes / commentWords.size() > 55 / 100) {
+                        printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_REDUNDANT_CODE_DESC)
+                    }
+                }
+            }
+            if (trimmedLine.matches('^\\s*//+[^ ].+$')) {
+                printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_SINGLE_LINE_COMMENT_FORMAT)
+            }
         }
     }
 }

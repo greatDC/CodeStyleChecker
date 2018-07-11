@@ -73,7 +73,7 @@ class CodeStyleCheckDetailFileData extends CodeStyleCheckSummaryFileData {
         Closure<StringBuilder> lineBuilder = { reportContentBuilder.append(LINE_BREAK_TAG) }
         errorList.groupBy {
             it.fileAbsolutePath
-        }.sort{
+        }.sort {
             it.key
         }.each {
             String fileName = it.key.replaceFirst('^.*[/\\\\]', '')
@@ -97,7 +97,7 @@ class CodeStyleCheckDetailFileData extends CodeStyleCheckSummaryFileData {
         Closure<StringBuilder> lineBuilder = { reportContentBuilder.append(LINE_BREAK_TAG) }
         errorList.groupBy {
             it.fileAbsolutePath
-        }.sort{
+        }.sort {
             it.key
         }.each {
             String fileName = it.key.replaceFirst('^.*[/\\\\]', '')

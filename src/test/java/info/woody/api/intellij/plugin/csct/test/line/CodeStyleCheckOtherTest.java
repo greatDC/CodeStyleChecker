@@ -30,7 +30,6 @@ public class CodeStyleCheckOtherTest extends BaseUnitTest {
 //LINE_BOOLEAN_LITERAL_COMPARE
 //LINE_LOG_EXCEPTION
 
-
     @Test
     public void javaOthersTest() {
         rule.GIT_FILES_TO_MERGE = SAMPLE_PROJECT_SRC + "/src/test/groovy/info/woody/api/intellij/plugin/csct/sample/java/other/SampleJavaOtherIssueTest.java";
@@ -75,7 +74,7 @@ public class CodeStyleCheckOtherTest extends BaseUnitTest {
 //        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_EXCEED_140_CHARS));
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_MERGE_LINES));
 //        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_ENUM_IMPORT));
-        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_IDENTICAL_EXPRESSIONS));
+        Assert.assertEquals(2, getErrorCount(errors, CodeStyleCheckIssues.LINE_IDENTICAL_EXPRESSIONS));
 //        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_REDUCE_MULTIPLE_CALCULATION));
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_OPTIMIZE_RETURN));
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_MOVE_UPPER_ADVICE));

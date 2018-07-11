@@ -41,7 +41,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.joining;
 
 /**
- * This action will be triggered by the menu. The tutorial could be found at below link.
+ * This action will be triggered by the menu.
+ * The tutorial could be found at below link.
  * <p>https://www.jetbrains.org/intellij/sdk/docs/welcome.html</p>
  *
  * @author Woody

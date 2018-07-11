@@ -18,6 +18,8 @@ public class CodeStyleCheckCommentAndCurlyBraceTest extends BaseUnitTest {
         List<String> errors = getLineErrors();
 
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_SINGLE_LINE_COMMENT_FORMAT));
+        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_REDUNDANT_CODE_DESC));
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_LEFT_CURLY_BRACE_LINE));
+        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_COMMENTED_OUT_CODES));
     }
 }
