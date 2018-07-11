@@ -64,9 +64,10 @@ class CodeStyleCheckDetailFileData extends CodeStyleCheckSummaryFileData {
     }
 
     /**
+     * Get global issue report.
      *
-     * @param errorList
-     * @return
+     * @param errorList Error list.
+     * @return Global issue report.
      */
     static String getReportForGlobalIssue(List<CodeStyleCheckGlobalError> errorList) {
         StringBuilder reportContentBuilder = new StringBuilder()
@@ -88,9 +89,10 @@ class CodeStyleCheckDetailFileData extends CodeStyleCheckSummaryFileData {
     }
 
     /**
-     *
-     * @param errorList
-     * @return
+     * Get line issue report.
+     * 
+     * @param errorList Error list.
+     * @return Line issue report.
      */
     static String getReportForLineIssue(List<CodeStyleCheckLineError> errorList) {
         StringBuilder reportContentBuilder = new StringBuilder()

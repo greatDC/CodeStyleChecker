@@ -258,7 +258,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
 
     private void checkClassInterfaceEnum(String[] lines, int index, String line,  String trimmedLine, boolean isTest) {
         LINE_META.CLASS = true
-        if (!isTest && !line.contains("interface") && !line.contains("abstract") && !line.contains("Base") &&
+        if (!isTest && !line.contains("interface") && !line.contains("abstract") && !line.contains("Base") && !line.contains("Const") && !line.contains("Constant") &&
                 !ALL_FILES_NAME.contains(PROD_FILE_NAME.replaceAll('.(groovy|java)$', 'Test.java')) &&
                 !ALL_FILES_NAME.contains(PROD_FILE_NAME.replaceAll('.(groovy|java)$', 'Test.groovy'))) {
             if (!lines[0].matches('^.*\\b(models?|beans?|pojos?)\\b.*$')) {
