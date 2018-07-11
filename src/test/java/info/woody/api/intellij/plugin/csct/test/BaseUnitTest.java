@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 public class BaseUnitTest {
 
-    public static final String SAMPLE_PROJECT_SRC = "/Users/renzhengwei/Workstation/Workspace/git/Example/src/";
+    public static final String SAMPLE_PROJECT_SRC = "/Users/renzhengwei/Workstation/Workspace/git/Examples/src/";
 
     protected CodeStyleCheckRule rule = new CodeStyleCheckRuleImpl();
 
@@ -50,6 +50,10 @@ public class BaseUnitTest {
             assertNonEmptyList(errorList);
             return errorList.stream().map(CodeStyleCheckLineError::getError).collect(Collectors.toList());
         }
+    }
+
+    protected long getErrorCount(List<String> errors, String errorMessage) {
+        return errors.stream().filter(error -> error.contains(errorMessage)).count();
     }
 
     private void assertNonEmptyList(List<?> list) {

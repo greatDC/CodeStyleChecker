@@ -24,8 +24,8 @@ public class CodeStyleCheckDocumentationTest extends BaseUnitTest {
         rule.GIT_FILES_TO_MERGE = SAMPLE_PROJECT_SRC + "/src/main/groovy/info/woody/api/intellij/plugin/csct/sample/java/documentation/SampleJavaDocumentationIssue.java";
         List<String> errors = getLineErrors();
 
-        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_NO_DOCUMENTATION_CONTENT));
-        Assert.assertEquals(3, errors.stream().filter(error -> error.equals(CodeStyleCheckIssues.LINE_DOCUMENTATION_FORMAT)).count());
+        Assert.assertEquals(4, errors.stream().filter(error -> error.contains(CodeStyleCheckIssues.LINE_DOCUMENTATION_FORMAT)).count());
+        Assert.assertEquals(3, errors.stream().filter(error -> error.equals(CodeStyleCheckIssues.LINE_NO_DOCUMENTATION_CONTENT)).count());
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_INCORRECT_CREATION_DATE_FORMAT));
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_CODE_IN_DOCUMENTATION));
     }

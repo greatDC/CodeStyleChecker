@@ -36,12 +36,12 @@ public class CodeStyleCheckOtherTest extends BaseUnitTest {
         rule.GIT_FILES_TO_MERGE = SAMPLE_PROJECT_SRC + "/src/test/groovy/info/woody/api/intellij/plugin/csct/sample/java/other/SampleJavaOtherIssueTest.java";
         List<String> errors = getLineErrors();
 
-        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_CONSTANT_AS_LEFT_OPERAND));
+        Assert.assertEquals(2, getErrorCount(errors, CodeStyleCheckIssues.LINE_CONSTANT_AS_LEFT_OPERAND));
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_ENUM_COMPARE));
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_ASSERT));
 //        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_CONSTANT_FOR_LITERAL));
-        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_NOT_FORMATTED));
-        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_BAD_VARIABLE_PATTERN));
+        Assert.assertEquals(6, getErrorCount(errors, CodeStyleCheckIssues.LINE_NOT_FORMATTED));
+        Assert.assertEquals(2, getErrorCount(errors, CodeStyleCheckIssues.LINE_BAD_VARIABLE_PATTERN));
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_CONSTANT_REQUESTPROPERTIES));
 //        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_GROOVY_DEF));
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_BAD_PRINT));
@@ -66,7 +66,7 @@ public class CodeStyleCheckOtherTest extends BaseUnitTest {
 //        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_CONSTANT_AS_LEFT_OPERAND));
 //        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_ENUM_COMPARE));
 //        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_ASSERT));
-        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_CONSTANT_FOR_LITERAL));
+        Assert.assertEquals(3, getErrorCount(errors, CodeStyleCheckIssues.LINE_CONSTANT_FOR_LITERAL));
 //        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_NOT_FORMATTED));
 //        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_BAD_VARIABLE_PATTERN));
 //        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_CONSTANT_REQUESTPROPERTIES));
@@ -83,5 +83,12 @@ public class CodeStyleCheckOtherTest extends BaseUnitTest {
 //        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_IMPROPER_ACRONYM));
 //        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_BOOLEAN_LITERAL_COMPARE));
 //        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_LOG_EXCEPTION));
+    }
+
+    @Test
+    public void groovyOthersTest() {
+        rule.GIT_FILES_TO_MERGE = SAMPLE_PROJECT_SRC + "/src/test/java/info/woody/api/intellij/plugin/csct/sample/groovy/other/SampleGroovyOtherIssueTest.groovy";
+        List<String> errors = getLineErrors();
+        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_ASSERT));
     }
 }

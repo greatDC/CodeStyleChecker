@@ -64,7 +64,9 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
             String trimmedSecureLine = secureLine.trim()
             int trimmedLineLength = trimmedLine.length()
 
-            if (debug('ANNOTATION') && trimmedLine.startsWith('@')) {
+            if (trimmedLine == '}') {
+                return // do nothing
+            } else if (debug('ANNOTATION') && trimmedLine.startsWith('@')) {
                 return // do nothing
             } else if (debug('DOCUMENTATION') && trimmedLine.matches('^/?[*].*$')) {
                 checkDocumentation(lines, index, line, trimmedLine)
@@ -80,13 +82,12 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
             } else if (debug('CONSTRUCTOR') && !trimmedSecureLine.endsWith(";") && !trimmedSecureLine.contains("=")
                     && trimmedSecureLine.matches("^.*${PROD_FILE_NAME.replaceFirst('[.].*$', '')}[(].*")) {
                 checkConstructor(lines, index, line)
-            } else if (debug('METHOD') && secureLine.matches('^(\t| {1,7})((public|protected|private)( ))?[\\w$]+(<[^()]+>)? \\w+[(][^+-=)]*[)]\\s*[{]$')) {
+            } else if (debug('METHOD') && secureLine.matches('^(\t| {3,5})((public|protected|private)( ))?[\\w$]+(<[^()]+>)? [\\w$]+[(][^+-=)]*[)]\\s*[{]$')) {
                 checkMethod(content, lines, index, line, trimmedLine, isTest)
             } else if (debug('SINGLE { IN A LINE') && line.matches('^\\s*[{]\\s*$')) {
                 printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_LEFT_CURLY_BRACE_LINE)
             } else if (trimmedLineLength) {
-                if (debug('CHECK NullPointerException') &&
-                        line.matches('^.*[.](equals|equalsIgnoreCase)[(]([^)]+[.])?[A-Z_]{2,}[)].*$')) {
+                if (debug('CHECK NullPointerException') && trimmedLine.matches('^.*[.]equals(IgnoreCase)?[(]([^)]+[.])?[A-Z_]{2,}[)].*$')) {
                     printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_CONSTANT_AS_LEFT_OPERAND)
                 }
                 if (debug('ENUM COMPARISON') && trimmedSecureLine.matches('^.+\\b\\w+Enum[.][A-Z_]+[.]equals.+$')) {
@@ -100,17 +101,17 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                         && !(PROD_FILE_NAME.contains('RequestService') // exclude the pattern like 'XxxRequestService'
                         && PROD_FILE_NAME.endsWith('.groovy')) // request service written by Groovy
                 ) {
-                    if (trimmedLine.matches('(?i)^.+?"([a-z0-9._]+|[-_+=;:></?!@#$%&*()~`|\\\\])".*$') // string pattern only
+                    if (trimmedLine.matches('(?i)^.+?"([a-z0-9._]+|\\W)".*$') // string pattern only
                             || trimmedSecureLine.replaceAll('\\[\\d+\\]', '') // remove index pattern for list element
                             .matches('^.*\\b([2-9]|[1-9]\\d+|\\d+[.]\\d+)\\b.*$') // number pattern only, excluding 0 and 1
                     ) {
                         printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_CONSTANT_FOR_LITERAL)
                     }
                 }
-                if (debug('FORMAT') && trimmedSecureLine.matches('^.*(\\b(if|while|for|switch)[(]|\\b\\w+[{]|[}]\\w+\\b|[)][{]).*$')) {
+                if (debug('FORMAT') && trimmedSecureLine.matches('^.*(\\b(if|while|for|switch)[(]|\\w+[={]|[=}]\\w+|[)][{]).*$')) {
                     printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_NOT_FORMATTED)
                 }
-                if (debug('BAD NAMING') && trimmedSecureLine.matches('^.*\\b(\\w+(Str(ing)?|Redis)|(str(ing)?|redis)[A-Z]\\w+).*=.*$')) {
+                if (debug('BAD NAMING') && trimmedSecureLine.matches('^.*(\\w+(Str(ing)?|Redis)|(str(ing)?|redis)[A-Z]\\w+)(\\s*=.*)$')) {
                     printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_BAD_VARIABLE_PATTERN)
                 }
                 if (debug('REQUESTPROPERTIES') && trimmedLine.contains('"requestProperties"')) {
@@ -155,8 +156,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                         printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_MERGE_LINES)
                     }
                 }
-                if (debug('ENUM IMPORTING') && !LINE_META.FIELD &&
-                        secureLine.matches('^.*\\b[A-Z]\\w+[.]\\w+Enum.*$') && !line.contains("import ")) {
+                if (debug('ENUM IMPORTING') && trimmedSecureLine.matches('^.*\\b[A-Z]\\w+[.]\\w+Enum.*$')) {
                     printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_ENUM_IMPORT)
                 }
                 if (debug('IDENTICAL EXPRESSIONS') && !isTest && index > 5 && index + 5 < totalLineCount) {
@@ -215,35 +215,37 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
 
     private void checkImport(String content, String line) {
         LINE_META.IMPORT = true
-        if (line.matches('^\\s*import\\b.+[*].*$')) {
+        if (line.contains('*')) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_IMPORT_ASTERISK)
-        }
-        String importedKeyword = line.replaceAll('^.+[.](\\w+)\\W?$', '$1')
-        if (!line.contains('*') && !content.replaceFirst('(?s)\\b' + importedKeyword + '\\b', '')
-                .matches('(?s)^.*\\b' + importedKeyword + '\\b.*$')) {
-            printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_NEVER_USED_IMPORTED)
+        } else {
+            String importedKeyword = line.replaceAll('^.+[.](\\w+)\\W*$', '$1')
+            if (!content.replaceFirst('(?s)\\b' + importedKeyword + '\\b', '')
+                    .matches('(?s)^.+\\b' + importedKeyword + '\\b.+$')) {
+                printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_NEVER_USED_IMPORTED)
+            }
         }
     }
 
     private void checkDocumentation(String[] lines, int index, String line, String trimmedLine) {
         LINE_META.DOCUMENTATION = true
+        String nextTrimmedLine = lines[index + 1].trim()
+        if (trimmedLine == "/**" && (nextTrimmedLine == '*' || nextTrimmedLine == '*/' || nextTrimmedLine.startsWith('* @'))) {
+            printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_NO_DOCUMENTATION_CONTENT)
+        }
         String lineWithoutHtml = trimmedLine.replaceAll("<[^>]+>", "")
-        if (lineWithoutHtml.matches("[ */]*") || lineWithoutHtml.startsWith('* @')) {
+        if (trimmedLine.startsWith('/**') || trimmedLine.endsWith('*/')) {
+            return
         } else if (lineWithoutHtml.contains('@since')) {
             if (!lineWithoutHtml.matches('''^.*\\b([012][0-9]|30|31)/(0[1-9]|1[0-2])/201[0-9]\\b.*$''')) {
                 printWarning(lineWithoutHtml, LINE_NUMBER, CodeStyleCheckIssues.LINE_INCORRECT_CREATION_DATE_FORMAT)
             }
-        } else if (!trimmedLine.replaceFirst('^[*] ([^@]*((@param|@throws) \\w+|@return))?', '').trim()
+        } else if (!trimmedLine.replaceFirst('^[*] (@(param|throws) \\w+|@return)?', '').trim()
                 .matches('^[0-9A-Z{<].*[.:,;!?>]$')) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_DOCUMENTATION_FORMAT)
         }
         if (lineWithoutHtml.replaceAll('[{][^}]+[}]', '').replaceAll('(Chinese|International)', '')
                 .matches('^[*] (@\\w+\\s+\\w+\\s+)?[A-Z][a-z].*[A-Z][a-z].*$')) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_CODE_IN_DOCUMENTATION)
-        }
-        String nextTrimmedLine = lines[index + 1].trim()
-        if (trimmedLine == "/**" && (nextTrimmedLine == '*' || nextTrimmedLine == '*/' || nextTrimmedLine.startsWith('* @'))) {
-            printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_NO_DOCUMENTATION_CONTENT)
         }
     }
 
@@ -281,17 +283,12 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         if (debug('PRIVATE FIELD') && isTest && line.contains("protected ")) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_UNIT_TEST_PRIVATE_FIELD)
         }
-        if (debug('REFERENCE FIELD') && !isTest && !line.contains("LOGGER")) {
-            if (!lines[0].matches('^.*\\b(models?|beans?|constants?)\\b.*$')) {
-                if (PROD_FILE_NAME.contains("Controller.java")) {
-                    if (!line.contains("private")) {
-                        printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_FIELD_MODIFIER_FOR_CONTROLLER)
-                    }
-                } else {
-                    if (!line.contains("protected") && !line.contains("public")) {
-                        printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_FIELD_MODIFIER_FOR_SERVICE)
-                    }
-                }
+        if (debug('REFERENCE FIELD') && !isTest && !line.contains("LOGGER") &&
+            !lines[0].matches('^.*\\b(models?|beans?|constants?)\\b.*$')) {
+            if (PROD_FILE_NAME.contains("Controller.java") && !trimmedLine.startsWith("private")) {
+                printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_FIELD_MODIFIER_FOR_CONTROLLER)
+            } else if (!trimmedLine.startsWith("protected") && !trimmedLine.startsWith("public")) {
+                printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_FIELD_MODIFIER_FOR_SERVICE)
             }
         }
         if (debug('NAMING') && (line.contains("Validator ") || line.contains("Service ") || line.contains("Converter ")) &&
@@ -305,10 +302,10 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                 && !trimmedSecureLine.contains(PROD_FILE_NAME.replaceFirst('[.]\\w+$', ''))) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_LOGGER_TARGET_CLASS)
         }
-        if (debug('STATIC') && line.contains(" static ")) {
-            if (!line.contains(" final ")) {
+        if (debug('STATIC') && trimmedLine.contains(" static ")) {
+            if (!trimmedLine.contains(" final ")) {
                 printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_MISSING_FINAL)
-            } else if (line.matches('(?i)^.* (string|boolean|int|integer|float|long) .*$') &&
+            } else if (trimmedLine.matches('(?i)^.* (string|boolean|int|integer|float|long) .*$') &&
                     fieldName != fieldName.toUpperCase()) {
                 printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_CONSTANT_NAME_CONVENTION)
             }
@@ -433,4 +430,4 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
 // auto expand folded lines
 // compare with empty string
 // compare with null, Groovy
-//
+// check xdist comment or documentation

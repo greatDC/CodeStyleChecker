@@ -30,7 +30,7 @@ public class CodeStyleCheckFieldTest extends BaseUnitTest {
         rule.GIT_FILES_TO_MERGE = SAMPLE_PROJECT_SRC + "/src/main/java/info/woody/api/intellij/plugin/csct/sample/java/field/SampleJavaFieldIssueService.java";
         List<String> errors = getLineErrors();
 
-        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_UNUSED_FIELD));
+        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_UNUSED_FIELD)); // TODO test with more examples
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_FIELD_NAME_CONVENTION));
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_LOGGER_NAME_CONVENTION));
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_LOGGER_TARGET_CLASS));

@@ -27,7 +27,7 @@ public class CodeStyleCheckMethodTest extends BaseUnitTest {
         rule.GIT_FILES_TO_MERGE = SAMPLE_PROJECT_SRC + "/src/main/groovy/info/woody/api/intellij/plugin/csct/sample/groovy/method/SampleGroovyMethodIssue.groovy";
         List<String> errors = getLineErrors();
 
-        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_UNUSED_METHOD));
+        Assert.assertEquals(2, errors.stream().filter(error -> error.contains(CodeStyleCheckIssues.LINE_UNUSED_METHOD)).count());
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_GROOVY_PUBLIC_IN_METHOD));
     }
 
