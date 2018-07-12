@@ -371,6 +371,10 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         if (content.toLowerCase().matches('(?is)^.*\\b(todo|fixme|hack|xxx)\\b.*$')) {
             printGlobalWarning CodeStyleCheckIssues.GLOBAL_TODO_FIXME_HACK_XXX
         }
+        if (content.contains('org.springframework.context.annotation.Profile') && content.contains('@Profile(')) {
+            String className = PROD_FILE_NAME.replaceAll('[.].+', '')
+            printGlobalWarning CodeStyleCheckIssues.GLOBAL_BAD_CLASS_NAMING_WITH_PROFILE
+        }
         if (isTest) {
             int posRule = content.indexOf('@Rule')
             int posSpy = content.indexOf('@Spy')
@@ -423,7 +427,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                             commentWordCountInCodes++
                         }
                     }
-                    if (commentWordCountInCodes / commentWords.size() > 55 / 100) {
+                    if (commentWordCountInCodes / commentWords.size() > 70 / 100) {
                         printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_REDUNDANT_CODE_DESC)
                     }
                 }
