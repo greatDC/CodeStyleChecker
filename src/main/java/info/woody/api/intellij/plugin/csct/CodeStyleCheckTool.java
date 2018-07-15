@@ -5,6 +5,8 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.progress.ProgressIndicatorProvider;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.ui.Messages;
@@ -22,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.ref.SoftReference;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -31,7 +34,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckDetailFileData.LINE_BREAK_TAG;
+import static com.intellij.openapi.progress.ProgressIndicatorProvider.getGlobalProgressIndicator;
+import static info.woody.api.intellij.plugin.csct.util.Const.HTML_TAG_BR;
+import static info.woody.api.intellij.plugin.csct.util.Const.HTML_TAG_HR;
 import static info.woody.api.intellij.plugin.csct.util.Const.LINE_SEPARATOR;
 import static info.woody.api.intellij.plugin.csct.util.EditorUtils.openFileInEditor;
 import static info.woody.api.intellij.plugin.csct.util.RichTextMaker.newHighlight;
@@ -77,7 +82,6 @@ public class CodeStyleCheckTool extends AnAction {
             }
             return;
         }
-
         ActionManager.getInstance().getAction(ACTION_ID_SAVE_ALL).actionPerformed(e);
 
         String defaultModuleRootDir = contentEntry.map(ContentEntry::getFile).map(VirtualFile::getPath).orElse(null);
@@ -91,27 +95,35 @@ public class CodeStyleCheckTool extends AnAction {
             openFileInEditor(configurationFile.getAbsolutePath(), e.getProject());
             return;
         }
-        CodeStyleCheckRule codeStyleCheck = new CodeStyleCheckRuleImpl();
-        codeStyleCheck.MY_SOURCE_DIR = context.MY_SOURCE_DIR();
-        codeStyleCheck.FILENAME_PATTERN_TO_SKIP = context.FILENAME_PATTERN_TO_SKIP();
-        codeStyleCheck.FILES_TO_SKIP = context.FILES_TO_SKIP();
-        codeStyleCheck.GIT_FILES_TO_MERGE = context.GIT_FILES_TO_MERGE();
-        CodeStyleCheckReport report = codeStyleCheck.doCheck();
 
-        ToolWindow codeStyleCheckResultView = ToolWindowManager.getInstance(e.getProject()).getToolWindow("Code scanning results");
-        JComponent rootComponent = codeStyleCheckResultView.getContentManager().getSelectedContent().getComponent();
-        JTextPane summaryTextPane = (JTextPane) rootComponent.getClientProperty(SUMMARY_TEXT_PANE);
-        JTextPane detailsTextPane = (JTextPane) rootComponent.getClientProperty(DETAILS_TEXT_PANE);
-        rootComponent.putClientProperty(REPORT_INFO, report);
+        ProgressManager.getInstance().executeProcessUnderProgress(() -> {
+            CodeStyleCheckRule codeStyleCheck = new CodeStyleCheckRuleImpl();
+            codeStyleCheck.MY_SOURCE_DIR = context.MY_SOURCE_DIR();
+            codeStyleCheck.FILENAME_PATTERN_TO_SKIP = context.FILENAME_PATTERN_TO_SKIP();
+            codeStyleCheck.FILES_TO_SKIP = context.FILES_TO_SKIP();
+            codeStyleCheck.GIT_FILES_TO_MERGE = context.GIT_FILES_TO_MERGE();
+            CodeStyleCheckReport report = codeStyleCheck.doCheck();
 
-        // update the tool window
-        summaryTextPane.setText(generateSummaryReport(report, configurationFile));
-        summaryTextPane.setCaretPosition(0);
-        detailsTextPane.setText(null);
-        codeStyleCheckResultView.setTitle("Time: " + LocalDateTime.now());
-        codeStyleCheckResultView.show(null);
+            ToolWindow codeStyleCheckResultView = ToolWindowManager.getInstance(e.getProject()).getToolWindow("Code scanning results");
+            JComponent rootComponent = codeStyleCheckResultView.getContentManager().getSelectedContent().getComponent();
+            JTextPane summaryTextPane = (JTextPane) rootComponent.getClientProperty(SUMMARY_TEXT_PANE);
+            JTextPane detailsTextPane = (JTextPane) rootComponent.getClientProperty(DETAILS_TEXT_PANE);
+            rootComponent.putClientProperty(REPORT_INFO, report);
+
+            // update the tool window
+            summaryTextPane.setText(generateSummaryReport(report, configurationFile));
+            summaryTextPane.setCaretPosition(0);
+            detailsTextPane.setText(null);
+            codeStyleCheckResultView.setTitle("Time: " + LocalDateTime.now());
+            codeStyleCheckResultView.show(null);
+        }, ProgressIndicatorProvider.getInstance().getProgressIndicator());
     }
 
+    /**
+     * Show a warning message dialog window.
+     *
+     * @param message The warning message.
+     */
     private void showWarningMessage(String message) {
         Messages.showMessageDialog(message, "", Messages.getWarningIcon());
     }
@@ -127,11 +139,10 @@ public class CodeStyleCheckTool extends AnAction {
         StringBuilder summaryReportBuilder = new StringBuilder("<pre>");
         CodeStyleCheckSummaryData summaryData = report.getSummaryData();
         String authors = summaryData.getAuthorsKeySet().stream()
-                //.sorted(author1, author2 -> report.getDetailDetailData().getMapAuthorsErrors().computeIfAbsent(author1, (v) -> 0))
                 .map(author -> format("<span style='text-align:center'>%s delivered %d issues.</span>",
                         newLink("AUTHOR#" + author, author, author),
                         report.getDetailData().getMapAuthorsErrors().computeIfAbsent(author, (v) -> 0)))
-                .collect(joining("<br>"));
+                .collect(joining(HTML_TAG_BR));
         int fileCount = report.getFileCount();
         int fileCountWithIssues = summaryData.getFileCountWithIssues();
         int fileCountWithoutIssues = fileCount - fileCountWithIssues;
@@ -144,16 +155,16 @@ public class CodeStyleCheckTool extends AnAction {
         String configurationFileName = configurationFile.getName();
         summaryReportBuilder.append(String.format("The configuration file: %s",
                 newLink(configurationFile.getAbsolutePath(), configurationFileName, configurationFileName)))
-                .append(LINE_BREAK_TAG).append(format("Thanks for:<br>%s", authors))
-                .append("<br>").append(format("%d issue(s) were found in %d file(s).", errorCount, fileCountWithIssues, fileCount))
-                .append("<br>").append(format("Totally %d out of %d files were clear.", fileCountWithoutIssues, fileCount))
-                .append("<br>").append(format("Cleanness rate is %,.2f%%.", (fileCountWithoutIssues + 0.0d) / fileCount * 100))
-                .append("<hr>");
+                .append(HTML_TAG_BR).append(format("Thanks for:<br>%s", authors))
+                .append(HTML_TAG_BR).append(format("%d issue(s) were found in %d file(s).", errorCount, fileCountWithIssues, fileCount))
+                .append(HTML_TAG_BR).append(format("Totally %d out of %d files were clear.", fileCountWithoutIssues, fileCount))
+                .append(HTML_TAG_BR).append(format("Cleanness rate is %,.2f%%.", (fileCountWithoutIssues + 0.0d) / fileCount * 100))
+                .append(HTML_TAG_HR);
 
         summaryData.getFilesGroupByError().entrySet().stream().forEach(entry -> {
             String size = String.valueOf(entry.getValue().size());
             String error = entry.getKey();
-            summaryReportBuilder.append("<br>").append(format("%s ERRORS FOR: %s",
+            summaryReportBuilder.append(HTML_TAG_BR).append(format("%s ERRORS FOR: %s",
                     newLink("ISSUE#" + error, error, size), newHighlight(error)));
         });
         return summaryReportBuilder.append("</pre>").toString();

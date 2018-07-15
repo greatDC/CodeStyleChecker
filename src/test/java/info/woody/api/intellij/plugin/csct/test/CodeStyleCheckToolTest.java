@@ -13,7 +13,7 @@ public class CodeStyleCheckToolTest extends BaseUnitTest {
 
     @Test
     public void success() {
-        rule.GIT_FILES_TO_MERGE = "src/main/groovy/info/woody/api/intellij/plugin/csct/sample/java/global/SampleGroovyGlobalIssue.groovy";
+        rule.GIT_FILES_TO_MERGE = SAMPLE_PROJECT_SRC + "src/main/groovy/info/woody/api/intellij/plugin/csct/sample/java/global/SampleGroovyGlobalIssue.groovy";
         CodeStyleCheckReport codeStyleCheckReport = rule.doCheck();
         Assert.assertNotNull(codeStyleCheckReport);
         Assert.assertNotNull(codeStyleCheckReport.getSummaryData().getGlobalErrorsGroupByFilePath());

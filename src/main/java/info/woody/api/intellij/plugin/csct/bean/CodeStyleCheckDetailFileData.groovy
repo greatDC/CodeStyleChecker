@@ -1,5 +1,8 @@
 package info.woody.api.intellij.plugin.csct.bean
 
+import info.woody.api.intellij.plugin.csct.util.Const
+
+import static info.woody.api.intellij.plugin.csct.util.Const.HTML_TAG_BR
 import static info.woody.api.intellij.plugin.csct.util.RichTextMaker.escapeContent
 import static info.woody.api.intellij.plugin.csct.util.RichTextMaker.newHighlight
 import static info.woody.api.intellij.plugin.csct.util.RichTextMaker.newLink
@@ -10,7 +13,6 @@ import static info.woody.api.intellij.plugin.csct.util.RichTextMaker.newLink
  * @author Woody
  */
 class CodeStyleCheckDetailFileData extends CodeStyleCheckSummaryFileData {
-    public static final String LINE_BREAK_TAG = "<br>"
     private static final int PADDING_WIDTH = 6
     private String reportContent = ""
     String authorsKey
@@ -48,7 +50,7 @@ class CodeStyleCheckDetailFileData extends CodeStyleCheckSummaryFileData {
         if (/*!reportContent &&*/ totalErrorCount > 0) {
             StringBuilder reportContentBuilder = new StringBuilder()
             reportContentBuilder.append("${newLink("${filePath}", fileName, fileName)} has ${totalErrorCount} error(s)")
-            Closure<StringBuilder> lineBuilder = { reportContentBuilder.append(LINE_BREAK_TAG) }
+            Closure<StringBuilder> lineBuilder = { reportContentBuilder.append(HTML_TAG_BR) }
             globalErrorList.each {
                 lineBuilder().append(newHighlight(String.format(it.error, it.args)))
             }
@@ -71,7 +73,7 @@ class CodeStyleCheckDetailFileData extends CodeStyleCheckSummaryFileData {
      */
     static String getReportForGlobalIssue(List<CodeStyleCheckGlobalError> errorList) {
         StringBuilder reportContentBuilder = new StringBuilder()
-        Closure<StringBuilder> lineBuilder = { reportContentBuilder.append(LINE_BREAK_TAG) }
+        Closure<StringBuilder> lineBuilder = { reportContentBuilder.append(HTML_TAG_BR) }
         errorList.groupBy {
             it.fileAbsolutePath
         }.sort {
@@ -96,14 +98,14 @@ class CodeStyleCheckDetailFileData extends CodeStyleCheckSummaryFileData {
      */
     static String getReportForLineIssue(List<CodeStyleCheckLineError> errorList) {
         StringBuilder reportContentBuilder = new StringBuilder()
-        Closure<StringBuilder> lineBuilder = { reportContentBuilder.append(LINE_BREAK_TAG) }
+        Closure<StringBuilder> lineBuilder = { reportContentBuilder.append(HTML_TAG_BR) }
         errorList.groupBy {
             it.fileAbsolutePath
         }.sort {
             it.key
         }.each {
             String fileName = it.key.replaceFirst('^.*[/\\\\]', '')
-            reportContentBuilder.append(fileName).append(LINE_BREAK_TAG)
+            reportContentBuilder.append(fileName).append(HTML_TAG_BR)
             it.value.each {
                 String filePath = it.fileAbsolutePath
                 String lineNumber = it.lineNumber.toString()

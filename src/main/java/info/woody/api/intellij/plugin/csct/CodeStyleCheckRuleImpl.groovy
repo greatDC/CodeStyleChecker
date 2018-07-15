@@ -1,6 +1,9 @@
 package info.woody.api.intellij.plugin.csct
 
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckIssues
+import info.woody.api.intellij.plugin.csct.util.Const
+
+import static info.woody.api.intellij.plugin.csct.util.Const.LINE_SEPARATOR
 
 /**
  * <p>http://www.oracle.com/technetwork/java/codeconvtoc-136057.html</p>
@@ -29,7 +32,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         boolean isTest = PROD_FILE_NAME.toLowerCase().contains("test") || file.path.matches('^.*src(/|\\\\)test\\1.*$')
         String content = file.getText('UTF-8')
         String[] lines = content.split("""\r?\n""")
-        __println "\n" * 3 + '*' * 50
+        __println LINE_SEPARATOR * 3 + '*' * 50
         PROD_FILE_ABSOLUTE_PATH = file.getAbsolutePath()
         __println "${fileNumber}. ".padLeft(5, '0')
                 .concat("<a name='file' href='${PROD_FILE_ABSOLUTE_PATH}'>${PROD_FILE_NAME}</a> from ${PROD_FILE_ABSOLUTE_PATH}")
@@ -371,9 +374,11 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         if (content.toLowerCase().matches('(?is)^.*\\b(todo|fixme|hack|xxx)\\b.*$')) {
             printGlobalWarning CodeStyleCheckIssues.GLOBAL_TODO_FIXME_HACK_XXX
         }
-        if (content.contains('org.springframework.context.annotation.Profile') && content.contains('@Profile(')) {
+        if (content.contains('@Profile(')) {
             String className = PROD_FILE_NAME.replaceAll('[.].+', '')
-            printGlobalWarning CodeStyleCheckIssues.GLOBAL_BAD_CLASS_NAMING_WITH_PROFILE
+            if (!className.matches('(Chinese|International)$')) {
+                printGlobalWarning CodeStyleCheckIssues.GLOBAL_BAD_CLASS_NAMING_WITH_PROFILE
+            }
         }
         if (isTest) {
             int posRule = content.indexOf('@Rule')

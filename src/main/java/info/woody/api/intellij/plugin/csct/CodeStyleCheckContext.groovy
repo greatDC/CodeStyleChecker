@@ -39,18 +39,38 @@ class CodeStyleCheckContext {
         }
     }
 
+    /**
+     * Get the source directory.
+     *
+     * @return The source directory.
+     */
     String MY_SOURCE_DIR() {
         this.sourceDir
     }
 
+    /**
+     * Get files to skip.
+     *
+     * @return Files to skip.
+     */
     List<String> FILES_TO_SKIP() {
         (this.rawXml.FileExclusion.text().replaceAll("(?i)[^a-z.\\n]", "").split("\\s*\\n\\s*") as List).findAll { return it.length() }
     }
 
+    /**
+     * Get the pattern for files to skip.
+     *
+     * @return The pattern for files to skip.
+     */
     String FILENAME_PATTERN_TO_SKIP() {
         this.rawXml.FileExclusionPattern.text()
     }
 
+    /**
+     * Get files to merge into GIT.
+     *
+     * @return The files to merge into GIT.
+     */
     String GIT_FILES_TO_MERGE() {
         this.rawXml.FileInclusion.text()
     }

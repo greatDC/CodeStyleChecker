@@ -9,6 +9,7 @@ import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckGlobalError;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckLineError;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckReport;
 import info.woody.api.intellij.plugin.csct.util.CodeStyleCheckEnum.SummaryLinkType;
+import info.woody.api.intellij.plugin.csct.util.Const;
 
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
@@ -20,7 +21,8 @@ import java.util.stream.Collectors;
 import static info.woody.api.intellij.plugin.csct.CodeStyleCheckTool.DETAILS_TEXT_PANE;
 import static info.woody.api.intellij.plugin.csct.CodeStyleCheckTool.REPORT_INFO;
 import static info.woody.api.intellij.plugin.csct.CodeStyleCheckTool.SUMMARY_TEXT_PANE;
-import static info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckDetailFileData.LINE_BREAK_TAG;
+import static info.woody.api.intellij.plugin.csct.util.Const.HTML_TAG_BR;
+import static info.woody.api.intellij.plugin.csct.util.Const.SIGN_HASH;
 import static info.woody.api.intellij.plugin.csct.util.EditorUtils.openFileInEditor;
 
 /**
@@ -69,7 +71,7 @@ public class CodeStyleCheckResultView {
             String description = e.getDescription();
             String path;
             int lineIndex = 0;
-            if (description.contains("#")) {
+            if (description.contains(SIGN_HASH)) {
                 path = description.replaceFirst("#.+$", "");
                 lineIndex = Integer.valueOf(description.replaceFirst("^.+#", "")) - 1;
             } else {
@@ -88,8 +90,8 @@ public class CodeStyleCheckResultView {
                 return;
             }
             String description = hyperlinkEvent.getDescription();
-            if (description.contains("#")) {
-                String[] hrefMeta = description.split("#");
+            if (description.contains(SIGN_HASH)) {
+                String[] hrefMeta = description.split(SIGN_HASH);
                 String linkType = hrefMeta[0];
                 String linkValue = hrefMeta[1];
 
@@ -117,7 +119,7 @@ public class CodeStyleCheckResultView {
                     String authorsKey = linkValue;
                     String details = fileDataList.stream()
                             .filter(fileData -> fileData.getAuthorsKey().equals(authorsKey))
-                            .map(CodeStyleCheckDetailFileData::getReportForAuthor).collect(Collectors.joining(LINE_BREAK_TAG));
+                            .map(CodeStyleCheckDetailFileData::getReportForAuthor).collect(Collectors.joining(HTML_TAG_BR));
                     detailsTextPane.setText(String.format("<pre>%s</pre>", details));
                     detailsTextPane.setCaretPosition(0);
                 }

@@ -2,6 +2,8 @@ package info.woody.api.intellij.plugin.csct.util
 
 import groovy.xml.XmlUtil
 
+import static info.woody.api.intellij.plugin.csct.util.Const.SING_SINGLE_QUOTE
+
 /**
  * Utility class to create HTML tags.
  *
@@ -38,7 +40,7 @@ class RichTextMaker {
      * @return Processed content.
      */
     static String escapeContent(String string) {
-        XmlUtil.escapeXml(string).replace("&apos;", "'")
+        XmlUtil.escapeXml(string).replace("&apos;", SING_SINGLE_QUOTE)
     }
 
     /**
@@ -48,6 +50,6 @@ class RichTextMaker {
      * @return Processed content.
      */
     static String[] escapeArgs(String... strings) {
-        strings.collect { XmlUtil.escapeXml(it).replace("&apos;", "'") }
+        strings.collect { XmlUtil.escapeXml(it).replace("&apos;", SING_SINGLE_QUOTE) }
     }
 }

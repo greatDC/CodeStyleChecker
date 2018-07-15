@@ -8,8 +8,12 @@ import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckReport
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckSummaryData
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckSummaryFileData
 import groovy.io.FileType
+import info.woody.api.intellij.plugin.csct.util.Const
 
 import java.util.regex.Pattern
+
+import static info.woody.api.intellij.plugin.csct.util.Const.LINE_SEPARATOR
+import static info.woody.api.intellij.plugin.csct.util.Const.REPORT_LINE_SEPARATOR
 
 /**
  * <p>http://www.oracle.com/technetwork/java/codeconvtoc-136057.html</p>
@@ -58,7 +62,9 @@ abstract class CodeStyleCheckRule {
         Pattern patternFileNameToSkip = Pattern.compile(FILENAME_PATTERN_TO_SKIP?:"")
         List<String> filesToSkip = FILES_TO_SKIP ?: []
         List<String> gitFilesToMerge = (GIT_FILES_TO_MERGE ?: "").split('(?s)\\r?\\n').toList().collect {
-            it.replaceAll('^.*[/\\\\]', '')
+            it.trim().replaceAll('^.*[/\\\\]', '')
+        }.findAll {
+            it.trim().length()
         }
         dir.eachFileRecurse(FileType.FILES) { File file ->
             String fileName = file.name
@@ -220,7 +226,7 @@ abstract class CodeStyleCheckRule {
      * Print file summary.
      */
     protected void printFileResult() {
-        __println "-" * 50
+        __println REPORT_LINE_SEPARATOR
         if (0 == FILE_ISSUE_COUNT) {
             __print "Well done :)\t\t\t"
         } else {
@@ -233,10 +239,10 @@ abstract class CodeStyleCheckRule {
      * Print report summary.
      */
     protected void printGlobalResult() {
-        __println "\n" * 5
-        __println "-" * 50
+        __println LINE_SEPARATOR * 5
+        __println REPORT_LINE_SEPARATOR
         __println "TOTAL FILES: ${TARGET_FILES.size()}, ALL FOUND ISSUES: ${ALL_ISSUE_COUNT}"
-        __println "-" * 50
+        __println REPORT_LINE_SEPARATOR
         STATISTICS_TYPE_REPORT.sort { 0 - it.value }.each { __println "${it.value.toString().padLeft(3)} errors for [${it.key}]" }
         __println()
         Map<String, Map<String, Object>> ranking = [:]
@@ -250,9 +256,9 @@ abstract class CodeStyleCheckRule {
             }
         }
         ranking.sort { 0 - it.value['ERRORS'] }.each {
-            __println "-" * 50
+            __println REPORT_LINE_SEPARATOR
             __println "${it.key} delivered ${it.value['ERRORS']} code smell(s) in below files:"
-            __println "-" * 50
+            __println REPORT_LINE_SEPARATOR
             it.value['FILES'].each { __println it }
             __println()
         }
@@ -288,7 +294,7 @@ abstract class CodeStyleCheckRule {
      * @param text Text to output.
      */
     protected void __println(String text) {
-        __print((text?:"") + "\n")
+        __print((text?:"") + LINE_SEPARATOR)
     }
 
     /**

@@ -11,7 +11,7 @@ public class CodeStyleCheckGlobalIssueTest extends BaseUnitTest {
 
     @Test
     public void javaGlobalIssue() {
-        rule.GIT_FILES_TO_MERGE = (SAMPLE_PROJECT_SRC + "/src/main/java/info/woody/api/intellij/plugin/csct/sample/java/global/SampleJavaGlobalIssue.java");
+        rule.GIT_FILES_TO_MERGE = SAMPLE_PROJECT_SRC + "/src/main/java/info/woody/api/intellij/plugin/csct/sample/java/global/SampleJavaGlobalIssue.java";
         List<String> errors = getGlobalErrors();
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.GLOBAL_FILE_END_EMPTY_LINE));
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.GLOBAL_NO_AUTHORS));
@@ -30,7 +30,7 @@ public class CodeStyleCheckGlobalIssueTest extends BaseUnitTest {
 
     @Test
     public void groovyGlobalIssue() {
-        rule.GIT_FILES_TO_MERGE = (SAMPLE_PROJECT_SRC + "/src/main/groovy/info/woody/api/intellij/plugin/csct/sample/groovy/global/SampleGroovyGlobalIssue.groovy");
+        rule.GIT_FILES_TO_MERGE = SAMPLE_PROJECT_SRC + "/src/main/groovy/info/woody/api/intellij/plugin/csct/sample/groovy/global/SampleGroovyGlobalIssue.groovy";
         List<String> errors = getGlobalErrors();
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.GLOBAL_FILE_END_EMPTY_LINE));
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.GLOBAL_NO_AUTHORS));
