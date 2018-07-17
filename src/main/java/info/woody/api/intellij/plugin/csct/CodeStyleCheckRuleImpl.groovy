@@ -1,10 +1,8 @@
 package info.woody.api.intellij.plugin.csct
 
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckIssues
-import info.woody.api.intellij.plugin.csct.util.Const
 
 import static info.woody.api.intellij.plugin.csct.util.Const.LINE_SEPARATOR
-
 /**
  * <p>http://www.oracle.com/technetwork/java/codeconvtoc-136057.html</p>
  *
@@ -43,10 +41,10 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                 continue
             }
             boolean isDocPattern = line.trim().startsWith("*")
-            if (isDocPattern && line.matches('^(?i).*created? by ([\\w.0]+).*$')) { // extract author from comment
-                AUTHORS << line.replaceAll('^(?i).*created? by ([\\w.0]+).*$', '$1').trim()
+            if (isDocPattern && line.matches('^(?i).*created? by ([\\w.]+).*$')) { // extract author from comment
+                AUTHORS << line.replaceAll('^(?i).*created? by ([\\w.]+).*$', '$1').trim()
             } else if (isDocPattern && line.contains('@author')) { // extract author from documentation
-                AUTHORS << line.replaceAll('^(?i).*@author (.*)$', '$1').trim()
+                AUTHORS << line.replaceAll('^(?i).*@author ([\\w.]+).*$', '$1').trim()
             }
         }
         checkGlobalIssues(content, lines, isTest)
@@ -76,10 +74,11 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                 checkSingleLineComment(lines, totalLineCount, index, line, trimmedLine)
             } else if (debug('IMPORT STATEMENT') && trimmedLine.startsWith('import ')) {
                 checkImport(content, line)
-            } else if (debug('FIELD') && trimmedSecureLine.matches('^(private|protected|public)[^{]+$') &&
+            } else if (debug('FIELD') && (trimmedSecureLine.matches('^(private|protected|public)[^{(]+$') ||
+                    trimmedSecureLine.matches('^(private|protected|public).+=.+$')) &&
                     !trimmedSecureLine.matches('^.* (class|interface|enum|abstract) .*$')) {
                 checkField(content, lines, index, line, trimmedLine, trimmedSecureLine, isTest)
-            } else if (debug('CLASS') && line.matches('^.*(private|protected|public)?[^(]*(class|interface|enum)[^(.\'="]*$')) {
+            } else if (debug('CLASS') && trimmedLine.matches('^(private|protected|public)?[^(]*(class|interface|enum)[^();.\'="]+[{]$')) {
                 checkClassInterfaceEnum(lines, index, line, trimmedLine, isTest)
             } else if (debug('CONSTRUCTOR') && !trimmedSecureLine.endsWith(";") && !trimmedSecureLine.contains("=")
                     && trimmedSecureLine.matches("^.*${PROD_FILE_NAME.replaceFirst('[.].*$', '')}[(].*")) {
@@ -99,13 +98,18 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                         (PROD_FILE_NAME.endsWith('groovy') && trimmedSecureLine.split('\\W').contains('Assert')))) {
                     printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_ASSERT)
                 }
-                if (debug('LITERAL') && !isTest
+                if (debug('LITERAL') && !isTest && !trimmedLine.startsWith('@')
                         && !(PROD_FILE_NAME.contains('RequestService') // exclude the pattern like 'XxxRequestService'
                         && PROD_FILE_NAME.endsWith('.groovy')) // request service written by Groovy
                 ) {
                     if (trimmedLine.matches('(?i)^.+?"([a-z0-9._]+|\\W)".*$') // string pattern only
                             || trimmedSecureLine.replaceAll('\\[\\d+\\]', '') // remove index pattern for list element
                             .matches('^.*\\b([2-9]|[1-9]\\d+|\\d+[.]\\d+)\\b.*$') // number pattern only, excluding 0 and 1
+                        // if statement
+                        // equals
+                        // =
+                        // contains
+                        // indexOf
                     ) {
                         printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_CONSTANT_FOR_LITERAL)
                     }
@@ -158,7 +162,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                         printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_MERGE_LINES)
                     }
                 }
-                if (debug('ENUM IMPORTING') && trimmedSecureLine.matches('^.*\\b[A-Z]\\w+[.]\\w+Enum.*$')) {
+                if (debug('ENUM IMPORTING') && trimmedSecureLine.matches('^.*\\b[A-Z]\\w+[.]\\w+Enum[.][A-Z].*$')) {
                     printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_ENUM_IMPORT)
                 }
                 if (debug('IDENTICAL EXPRESSIONS') && !isTest && index > 4 && index + 4 < totalLineCount) {
@@ -203,9 +207,10 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                         trimmedSecureLine.matches('^.*(==\\s*(true|false)|(true|false)\\s*==|==\\s*Boolean.(TRUE|FALSE)|Boolean.(TRUE|FALSE)\\s*==).*$')) {
                     printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_BOOLEAN_LITERAL_COMPARE)
                 }
-                if (debug('CATCH CLAUSE') && LINE_NUMBER > 8
+                if (debug('CATCH CLAUSE') && !isTest && LINE_NUMBER > 8
                         && stripStringPattern(lines[index - 1].trim()).split('\\W+').contains('catch') // previous line is catch
-                        && (!trimmedSecureLine.startsWith('LOGGER.error') || !trimmedSecureLine.contains(','))) {
+                        && (!trimmedSecureLine.matches('^LOGGER[.](error|warn).*[,].*$')
+                        && !lines[index + 1].matches('^LOGGER[.](error|warn).*[,].*$'))) {
                     printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_LOG_EXCEPTION)
                 }
             }
@@ -264,7 +269,8 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         if (!isTest && !line.contains("interface") && !line.contains("abstract") && !line.contains("Base") && !line.contains("Const") && !line.contains("Constant") &&
                 !ALL_FILES_NAME.contains(PROD_FILE_NAME.replaceAll('.(groovy|java)$', 'Test.java')) &&
                 !ALL_FILES_NAME.contains(PROD_FILE_NAME.replaceAll('.(groovy|java)$', 'Test.groovy'))) {
-            if (!lines[0].matches('^.*\\b(models?|beans?|pojos?)\\b.*$')) {
+            if (!lines[0].matches('^.*\\b(models?|beans?|pojos?|constants?)\\b.*$') && !PROD_FILE_NAME.contains('Base') &&
+                    !PROD_FILE_NAME.contains('Config') && !PROD_FILE_NAME.contains('Bean') && !PROD_FILE_NAME.contains('Exception')) {
                 printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_MISSING_UNIT_TEST)
             }
         }
@@ -283,18 +289,23 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         String codesAfterConstructor = content.substring(content.indexOf(fieldAssignment) + fieldAssignment.length())
         String codesAfterThisLine = (lines as List).subList(index + 1, lines.size() - 1).join('\n')
         if (debug('UNUSED FIELD') && !['@Mock', '@Spy'].contains(lines[index - 1].trim()) // don't check mocked field
-                // && PROD_FILE_NAME.matches('^.+(Impl|Service|Validator|Mapper|Process|Util|Interceptor|Helper).*$')
+                && !lines[0].matches('^.*\\b(models?|beans?|pojos?|constants?)\\b.*$')
+                && !trimmedLine.contains(' serialVersionUID ')
                 && !trimmedLine.startsWith("public")
+                && !content.contains('get' + fieldName.capitalize())
+                && !content.contains('set' + fieldName.capitalize())
                 && (!codesAfterThisLine.matches('(?s)^.*\\b' + fieldName + '\\b.*$') // field never appears after declaration
                 || (content.contains(fieldAssignment) && // field never appears after constructor
                 !codesAfterConstructor.matches('(?s)^.*\\b' + fieldName + '\\b.*$')))) {
-            printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_UNUSED_FIELD)
+            if (!trimmedLine.startsWith('protected ') || !PROD_FILE_NAME.contains('Base')) {
+                printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_UNUSED_FIELD)
+            }
         }
         if (debug('PRIVATE FIELD') && isTest && line.contains("protected ") && !PROD_FILE_NAME.contains('Base')) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_UNIT_TEST_PRIVATE_FIELD)
         }
         if (debug('REFERENCE FIELD') && !isTest && !line.contains("LOGGER") &&
-            !lines[0].matches('^.*\\b(models?|beans?|constants?)\\b.*$')) {
+            !lines[0].matches('^.*\\b(models?|beans?|pojos?|constants?)\\b.*$')) {
             if (PROD_FILE_NAME.contains("Controller.java") && !trimmedLine.startsWith("private")) {
                 printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_FIELD_MODIFIER_FOR_CONTROLLER)
             } else if (!trimmedLine.startsWith("protected") && !trimmedLine.startsWith("public")) {
@@ -315,15 +326,16 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         if (debug('STATIC') && trimmedLine.contains(" static ")) {
             if (!trimmedLine.contains(" final ")) {
                 printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_MISSING_FINAL)
-            } else if (trimmedLine.matches('(?i)^.* (string|boolean|int|integer|float|long) .*$') &&
+            } else if (!trimmedLine.contains(' serialVersionUID ') &&
+                    trimmedLine.matches('(?i)^.* (string|boolean|int|integer|float|long) .*$') &&
                     fieldName != fieldName.toUpperCase()) {
                 printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_CONSTANT_NAME_CONVENTION)
             }
         }
-        if (debug('GROOVY PUBLIC') && PROD_FILE_NAME.endsWith('.groovy') &&
-                !trimmedLine.contains(' static ') && trimmedLine.startsWith('public ')) {
-            printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_GROOVY_PUBLIC_IN_FIELD)
-        }
+//        if (debug('GROOVY PUBLIC') && PROD_FILE_NAME.endsWith('.groovy') &&
+//                !trimmedLine.contains(' static ') && trimmedLine.startsWith('public ')) {
+//            printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_GROOVY_PUBLIC_IN_FIELD)
+//        }
     }
 
     private void checkConstructor(String[] lines, int index, String line) {
@@ -335,15 +347,15 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
 
     private void checkMethod(String content, String[] lines, int index, String line, String trimmedLine, boolean isTest) {
         LINE_META.METHOD = true
-        if (LINE_NUMBER > 3 && !lines[index - 1].contains("@Override") && !lines[index - 2].contains("*")) {
+        if (LINE_NUMBER > 3 && !lines[index - 1].contains("@Override") && !lines[index - 3].contains("*")) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_METHOD_MISSING_DOCUMENTATION)
         }
         String methodName = trimmedLine.replaceAll('^.*\\b([\\w+$]+)[(].+$', '$1')
-        if ((line.contains('private ') || line.contains('protected ')) && !PROD_FILE_NAME.contains('Base') &&
+        if ((line.contains('private ') || line.contains('protected ')) && !PROD_FILE_NAME.contains('Base') && !PROD_FILE_NAME.contains('Common') &&
                 !content.replaceFirst('\\b' + methodName.replace('$', '\\$') + '\\b', '').contains(methodName)) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_UNUSED_METHOD)
         }
-        if (debug('TEST PREFIX') && isTest && lines[index - 1].trim().startsWith("@Test") && !trimmedLine.startsWith("test")) {
+        if (debug('TEST PREFIX') && isTest && lines[index - 1].trim().startsWith("@Test") && !trimmedLine.contains(" test")) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_TEST_METHOD_PREFIX_WRONG)
         }
         if (debug('GROOVY PUBLIC') && PROD_FILE_NAME.endsWith('.groovy') && trimmedLine.startsWith('public ')) {
@@ -374,9 +386,9 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         if (content.toLowerCase().matches('(?is)^.*\\b(todo|fixme|hack|xxx)\\b.*$')) {
             printGlobalWarning CodeStyleCheckIssues.GLOBAL_TODO_FIXME_HACK_XXX
         }
-        if (content.contains('@Profile(')) {
+        if (content.contains('@Profile("International"') || content.contains('@Profile("Chinese"')) {
             String className = PROD_FILE_NAME.replaceAll('[.].+', '')
-            if (!className.matches('(Chinese|International)$')) {
+            if (!className.matches('.*(Chinese|International)Impl$')) {
                 printGlobalWarning CodeStyleCheckIssues.GLOBAL_BAD_CLASS_NAMING_WITH_PROFILE
             }
         }
@@ -421,7 +433,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
             int nextLineIndex = index + 1
             if (nextLineIndex < totalLineCount) {
                 String nextLine = lines[nextLineIndex].trim()
-                if (!nextLine.startsWith('//')) {
+                if (!nextLine.startsWith('//') && !nextLine.startsWith('/*')) {
                     List<String> commentWords = trimmedLine.replace('//', '').trim().split('\\W').findAll {
                         String word = it.trim()
                         word.length() && !word.matches('^(then?|an?|to|s|its?|that|and|so|f?or|because|since|of)$')
@@ -432,7 +444,8 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                             commentWordCountInCodes++
                         }
                     }
-                    if (commentWordCountInCodes / commentWords.size() > 70 / 100) {
+                    def commentWordCountInComments = commentWords.size()
+                    if ((commentWordCountInComments > 1) && (commentWordCountInCodes / commentWordCountInComments > 70 / 100)) {
                         printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_REDUNDANT_CODE_DESC)
                     }
                 }

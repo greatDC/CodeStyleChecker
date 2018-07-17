@@ -42,9 +42,7 @@ public class CodeStyleCheckHelpView {
      */
     private void init() {
         DefaultListModel<String> checkItemListModel = new DefaultListModel<>();
-        CodeStyleCheckIssues.CHECK_ITEMS().entrySet().stream().forEach(entry -> {
-            checkItemListModel.addElement(entry.getValue());
-        });
+        CodeStyleCheckIssues.ALL_CHECK_ITEMS().entrySet().stream().forEach(entry -> checkItemListModel.addElement(entry.getValue()));
         checkItemList.setModel(checkItemListModel);
     }
 }

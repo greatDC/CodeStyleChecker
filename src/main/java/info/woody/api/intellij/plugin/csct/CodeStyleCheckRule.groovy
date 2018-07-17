@@ -1,5 +1,6 @@
 package info.woody.api.intellij.plugin.csct
 
+import groovy.io.FileType
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckDetailData
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckDetailFileData
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckGlobalError
@@ -7,14 +8,10 @@ import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckLineError
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckReport
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckSummaryData
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckSummaryFileData
-import groovy.io.FileType
-import info.woody.api.intellij.plugin.csct.util.Const
-
-import java.util.regex.Pattern
 
 import static info.woody.api.intellij.plugin.csct.util.Const.LINE_SEPARATOR
 import static info.woody.api.intellij.plugin.csct.util.Const.REPORT_LINE_SEPARATOR
-
+import java.util.regex.Pattern
 /**
  * <p>http://www.oracle.com/technetwork/java/codeconvtoc-136057.html</p>
  *
@@ -55,6 +52,13 @@ abstract class CodeStyleCheckRule {
      * @return Issues report.
      */
     CodeStyleCheckReport doCheck() {
+        Thread.currentThread().setUncaughtExceptionHandler({ t, e ->
+            println PROD_FILE_NAME
+            println PROD_FILE_ABSOLUTE_PATH
+            e.printStackTrace()
+            throw e
+        })
+
         File dir = new File(MY_SOURCE_DIR?:"")
         if (!dir.exists() || dir.isFile()) {
             throw new CodeStyleCheckException("`SourceDir` in configuration file has to be a valid file path: " + dir.getAbsolutePath())

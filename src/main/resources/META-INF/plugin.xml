@@ -12,6 +12,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
+      <p>17.07.2018 - Fix bugs caused by incorrect configuration. Optimise some check items.</p>
       <p>24.06.2018 - Now resulting report support 2 approaches to view issues: view by author; view by issue type.</p>
       <p>21.06.2018 - Support navigation within editor by line number.</p>
       <p>20.06.2018 - Totally we support 54 code style check items for Java and Groovy.</p>
@@ -44,4 +45,5 @@
         </action>
     </actions>
 
+    <depends>com.intellij.modules.java</depends>
 </idea-plugin>
