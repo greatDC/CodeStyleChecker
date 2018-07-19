@@ -481,3 +481,5 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
 // compare with empty string
 // compare with null, Groovy
 // check xdist comment or documentation
+// complex if expression is better to be assigned a well-named variable to improve the readability
+// optimise acronym naming convention

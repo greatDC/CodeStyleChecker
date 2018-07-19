@@ -9,6 +9,8 @@ import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckReport
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckSummaryData
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckSummaryFileData
 
+import java.util.function.BiFunction
+
 import static info.woody.api.intellij.plugin.csct.util.Const.LINE_SEPARATOR
 import static info.woody.api.intellij.plugin.csct.util.Const.REPORT_LINE_SEPARATOR
 import java.util.regex.Pattern
@@ -19,7 +21,7 @@ import java.util.regex.Pattern
  * @since 01/06/2018
  */
 abstract class CodeStyleCheckRule {
-
+    public BiFunction<String, Double, Boolean> PROGRESS
     public String MY_SOURCE_DIR = "" // source code folder
     public List<String> FILES_TO_SKIP = []
     public String FILENAME_PATTERN_TO_SKIP = '^.*(Controller).*$'
@@ -81,8 +83,12 @@ abstract class CodeStyleCheckRule {
                 }
             }
         }
+        int targetFileCount = TARGET_FILES.size()
         TARGET_FILES.eachWithIndex { File file, int index ->
-            findPotentialIssues(file, index + 1)
+            boolean isCanceled = this.PROGRESS.apply(file.name, ((index + 1) / targetFileCount).toDouble())
+            if (!isCanceled) {
+                findPotentialIssues(file, index + 1)
+            }
         }
         if (ENABLE_CONSOLE_REPORT) {
             printGlobalResult()

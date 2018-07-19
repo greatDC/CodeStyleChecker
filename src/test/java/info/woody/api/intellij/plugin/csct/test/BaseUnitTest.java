@@ -22,6 +22,7 @@ public class BaseUnitTest {
 
     @Before
     public void setUpBase() {
+        rule.PROGRESS = (a, b) -> false;
         rule.MY_SOURCE_DIR = SAMPLE_PROJECT_SRC;
         rule.FILES_TO_SKIP = new ArrayList<>();
         rule.FILENAME_PATTERN_TO_SKIP = "^.*(Controller).*$";

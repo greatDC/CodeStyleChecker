@@ -33,7 +33,6 @@ public class CodeStyleCheckOtherTest extends BaseUnitTest {
 //        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_REDUNDANT_GROOVY_SEMICOLON));
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_IMPROPER_ACRONYM));
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_BOOLEAN_LITERAL_COMPARE));
-        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_LOG_EXCEPTION));
     }
 
     @Test
@@ -60,7 +59,7 @@ public class CodeStyleCheckOtherTest extends BaseUnitTest {
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_REDUNDANT_GROOVY_SEMICOLON));
 //        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_IMPROPER_ACRONYM));
 //        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_BOOLEAN_LITERAL_COMPARE));
-//        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_LOG_EXCEPTION));
+        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_LOG_EXCEPTION));
     }
 
     @Test
