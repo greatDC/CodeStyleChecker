@@ -17,7 +17,7 @@ class CodeStyleCheckIssues {
     public static final String GLOBAL_FILE_END_EMPTY_LINE = "LAST LINE OF THE FILE SHOULD BE EMPTY LINE."
     public static final String GLOBAL_MORE_THAN_500_LINES = "CLASS LINES ARE MORE THAN 500."
     public static final String GLOBAL_TODO_FIXME_HACK_XXX = "TODO/FIXME/HACK/XXX should be fixed ASAP."
-    public static final String GLOBAL_BAD_CLASS_NAMING_WITH_PROFILE = "Class name should be like `PhoneValidatorChineseImpl`, `BookingServiceInternationalImpl`, or `CouponServiceTestChineseImpl`."
+    public static final String GLOBAL_BAD_CLASS_NAMING_WITH_PROFILE = "CLASS NAME SHOULD BE LIKE `PhoneValidatorChineseImpl` OR `BookingServiceInternationalImpl`."
     public static final String GLOBAL_MOCKITO_ORDER = "CORRECT FIELD DECLARATION ORDER FOR UNIT TEST: @Rule, @Spy, @Mock, @InjectMocks."
     public static final String GLOBAL_MISS_ERROR_CODE_TEST = "UNIT TEST MISSED ASSERTION FOR BELOW ERROR(S):%s"
 

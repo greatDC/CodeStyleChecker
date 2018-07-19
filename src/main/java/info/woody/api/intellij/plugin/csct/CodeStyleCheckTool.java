@@ -102,7 +102,6 @@ public class CodeStyleCheckTool extends AnAction {
                 @Override
                 public void run(@NotNull ProgressIndicator indicator) {
                     indicator.setText("Code style is checking ...");
-                    indicator.setFraction(0.5);
                     indicator.setIndeterminate(true);
                     BiFunction<String, Double, Boolean> updateProgress = (String title, Double progress) -> {
                         indicator.setText2(title);

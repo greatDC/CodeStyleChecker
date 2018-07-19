@@ -1,7 +1,6 @@
 package info.woody.api.intellij.plugin.csct.test;
 
 import info.woody.api.intellij.plugin.csct.CodeStyleCheckContext;
-import info.woody.api.intellij.plugin.csct.util.Const;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -13,6 +12,11 @@ import java.util.stream.Stream;
 import static info.woody.api.intellij.plugin.csct.test.BaseUnitTest.SAMPLE_PROJECT_SRC;
 import static info.woody.api.intellij.plugin.csct.util.Const.SIGN_HASH;
 
+/**
+ * Test class for {@link CodeStyleCheckContext}.
+ *
+ * @author Woody
+ */
 public class CodeStyleCheckContextTest {
 
     @Test(expected = FileNotFoundException.class)

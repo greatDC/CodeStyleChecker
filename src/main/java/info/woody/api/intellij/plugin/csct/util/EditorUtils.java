@@ -11,6 +11,11 @@ import com.intellij.openapi.vfs.VirtualFile;
 
 import java.nio.file.Paths;
 
+/**
+ * Editor utility class.
+ *
+ * @author Woody
+ */
 public class EditorUtils {
 
     /**

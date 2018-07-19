@@ -9,14 +9,6 @@ import org.junit.Test;
 import java.util.List;
 
 public class CodeStyleCheckFieldTest extends BaseUnitTest {
-//    CodeStyleCheckIssues.LINE_GROOVY_PUBLIC_IN_FIELD
-//    CodeStyleCheckIssues.LINE_UNUSED_FIELD
-//    CodeStyleCheckIssues.LINE_FIELD_NAME_CONVENTION
-//    CodeStyleCheckIssues.LINE_LOGGER_NAME_CONVENTION
-//    CodeStyleCheckIssues.LINE_LOGGER_TARGET_CLASS
-//    CodeStyleCheckIssues.LINE_CONSTANT_NAME_CONVENTION
-//    CodeStyleCheckIssues.LINE_FIELD_MODIFIER_FOR_SERVICE
-//    CodeStyleCheckIssues.LINE_FIELD_MODIFIER_FOR_CONTROLLER
 
     @Test @Ignore("This test can't be enabled until this check is necessary.")
     public void groovyField() {
@@ -37,6 +29,5 @@ public class CodeStyleCheckFieldTest extends BaseUnitTest {
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_LOGGER_TARGET_CLASS));
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_CONSTANT_NAME_CONVENTION));
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_FIELD_MODIFIER_FOR_SERVICE));
-        // Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_FIELD_MODIFIER_FOR_CONTROLLER));
     }
 }

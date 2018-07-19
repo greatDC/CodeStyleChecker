@@ -7,11 +7,13 @@ import org.junit.Test;
 
 import java.util.List;
 
+/**
+ * Test class for {@link info.woody.api.intellij.plugin.csct.CodeStyleCheckRuleImpl} to test import patterns.
+ *
+ * @author Woody
+ */
 public class CodeStyleCheckImportTest extends BaseUnitTest {
 
-//    CodeStyleCheckIssues.LINE_UNUSED_METHOD
-//    CodeStyleCheckIssues.LINE_TEST_METHOD_PREFIX_WRONG
-//    CodeStyleCheckIssues.LINE_GROOVY_PUBLIC_IN_METHOD
     @Test
     public void groovyMethod() {
         rule.GIT_FILES_TO_MERGE = SAMPLE_PROJECT_SRC + "/src/main/groovy/info/woody/api/intellij/plugin/csct/sample/groovy/imports/SampleGroovyImportIssue.groovy";

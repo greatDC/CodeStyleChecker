@@ -9,6 +9,11 @@ import org.junit.Test;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Test class for {@link info.woody.api.intellij.plugin.csct.CodeStyleCheckRuleImpl} to test initialisation.
+ *
+ * @author Woody
+ */
 public class CodeStyleCheckToolTest extends BaseUnitTest {
 
     @Test

@@ -270,6 +270,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                 !ALL_FILES_NAME.contains(PROD_FILE_NAME.replaceAll('.(groovy|java)$', 'Test.java')) &&
                 !ALL_FILES_NAME.contains(PROD_FILE_NAME.replaceAll('.(groovy|java)$', 'Test.groovy'))) {
             if (!lines[0].matches('^.*\\b(models?|beans?|pojos?|constants?)\\b.*$') && !PROD_FILE_NAME.contains('Base') &&
+                    !trimmedLine.contains('enum ') && !trimmedLine.contains('interface ') && !trimmedLine.contains('Enum ') &&
                     !PROD_FILE_NAME.contains('Config') && !PROD_FILE_NAME.contains('Bean') && !PROD_FILE_NAME.contains('Exception')) {
                 printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_MISSING_UNIT_TEST)
             }
@@ -332,10 +333,13 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                 printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_CONSTANT_NAME_CONVENTION)
             }
         }
-//        if (debug('GROOVY PUBLIC') && PROD_FILE_NAME.endsWith('.groovy') &&
-//                !trimmedLine.contains(' static ') && trimmedLine.startsWith('public ')) {
-//            printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_GROOVY_PUBLIC_IN_FIELD)
-//        }
+        /*
+        @Deprecated
+        if (debug('GROOVY PUBLIC') && PROD_FILE_NAME.endsWith('.groovy') &&
+                !trimmedLine.contains(' static ') && trimmedLine.startsWith('public ')) {
+            printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_GROOVY_PUBLIC_IN_FIELD)
+        }
+        */
     }
 
     private void checkConstructor(String[] lines, int index, String line) {
@@ -444,7 +448,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                             commentWordCountInCodes++
                         }
                     }
-                    def commentWordCountInComments = commentWords.size()
+                    int commentWordCountInComments = commentWords.size()
                     if ((commentWordCountInComments > 1) && (commentWordCountInCodes / commentWordCountInComments > 70 / 100)) {
                         printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_REDUNDANT_CODE_DESC)
                     }

@@ -3,10 +3,12 @@ package info.woody.api.intellij.plugin.csct;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
-import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
 import org.jetbrains.annotations.NotNull;
+
+import javax.swing.*;
+import java.util.function.BiConsumer;
 
 /**
  * Window factory to create windows.
@@ -35,10 +37,9 @@ public class CodeStyleCheckToolWindowFactory implements ToolWindowFactory {
      * @param contentFactory Plugin content factory.
      */
     private void addContent(@NotNull Project project, ContentManager contentManager, ContentFactory contentFactory) {
-        Content content;
-        content = contentFactory.createContent(new CodeStyleCheckResultView(project).getPanel(), TAB_TITLE_RESULTS, false);
-        contentManager.addContent(content);
-        content = contentFactory.createContent(new CodeStyleCheckHelpView(project).getPanel(), TAB_TITLE_HELP, false);
-        contentManager.addContent(content);
+        BiConsumer<JComponent, String> addContent = (component, displayName) ->
+                contentManager.addContent(contentFactory.createContent(component, displayName, false));
+        addContent.accept(new CodeStyleCheckResultView(project).getPanel(), TAB_TITLE_RESULTS);
+        addContent.accept(new CodeStyleCheckHelpView(project).getPanel(), TAB_TITLE_HELP);
     }
 }

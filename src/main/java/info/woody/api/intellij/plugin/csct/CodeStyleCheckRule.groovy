@@ -54,13 +54,6 @@ abstract class CodeStyleCheckRule {
      * @return Issues report.
      */
     CodeStyleCheckReport doCheck() {
-        Thread.currentThread().setUncaughtExceptionHandler({ t, e ->
-            println PROD_FILE_NAME
-            println PROD_FILE_ABSOLUTE_PATH
-            e.printStackTrace()
-            throw e
-        })
-
         File dir = new File(MY_SOURCE_DIR?:"")
         if (!dir.exists() || dir.isFile()) {
             throw new CodeStyleCheckException("`SourceDir` in configuration file has to be a valid file path: " + dir.getAbsolutePath())

@@ -9,7 +9,6 @@ import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckGlobalError;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckLineError;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckReport;
 import info.woody.api.intellij.plugin.csct.util.CodeStyleCheckEnum.SummaryLinkType;
-import info.woody.api.intellij.plugin.csct.util.Const;
 
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
