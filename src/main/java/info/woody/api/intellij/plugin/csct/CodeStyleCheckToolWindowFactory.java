@@ -23,9 +23,7 @@ public class CodeStyleCheckToolWindowFactory implements ToolWindowFactory {
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-
         ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
-
         addContent(project, toolWindow.getContentManager(), contentFactory);
     }
 

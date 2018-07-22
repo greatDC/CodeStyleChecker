@@ -16,10 +16,14 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.ui.content.Content;
+import com.intellij.ui.content.ContentManager;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckLineError;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckReport;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckSummaryData;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.io.BufferedReader;
@@ -55,6 +59,8 @@ import static java.util.stream.Collectors.joining;
  * @author Woody
  */
 public class CodeStyleCheckTool extends AnAction {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CodeStyleCheckTool.class);
 
     public static final String SUMMARY_TEXT_PANE = "summaryTextPane";
     public static final String DETAILS_TEXT_PANE = "detailsTextPane";
@@ -125,16 +131,19 @@ public class CodeStyleCheckTool extends AnAction {
         codeStyleCheck.GIT_FILES_TO_MERGE = context.GIT_FILES_TO_MERGE();
         CodeStyleCheckReport report = codeStyleCheck.doCheck();
         ToolWindow codeStyleCheckResultView = ToolWindowManager.getInstance(e.getProject()).getToolWindow("Code scanning results");
-        JComponent rootComponent = codeStyleCheckResultView.getContentManager().getSelectedContent().getComponent();
+        ContentManager contentManager = codeStyleCheckResultView.getContentManager();
+        Content resultsContent = contentManager.getContent(0);
+        JComponent rootComponent = resultsContent.getComponent();
         JTextPane summaryTextPane = (JTextPane) rootComponent.getClientProperty(SUMMARY_TEXT_PANE);
         JTextPane detailsTextPane = (JTextPane) rootComponent.getClientProperty(DETAILS_TEXT_PANE);
         rootComponent.putClientProperty(REPORT_INFO, report);
 
         // update the tool window
-        summaryTextPane.setText(generateSummaryReport(report, configurationFile));
-        summaryTextPane.setCaretPosition(0);
-        detailsTextPane.setText(null);
         SwingUtilities.invokeLater(() -> {
+            summaryTextPane.setText(generateSummaryReport(report, configurationFile));
+            summaryTextPane.setCaretPosition(0);
+            detailsTextPane.setText(null);
+            contentManager.setSelectedContent(resultsContent);
             codeStyleCheckResultView.setTitle("Time: " + LocalDateTime.now());
             codeStyleCheckResultView.show(null);
         });
@@ -195,9 +204,10 @@ public class CodeStyleCheckTool extends AnAction {
      * Create the configuration file as to the given path.
      *
      * @param configurationFilePath The configuration file path.
-     * @return
+     * @return {@code true} for successful file creation, otherwise {@code false}.
      */
     private boolean createConfigurationFile(Path configurationFilePath) {
+        String errorMessage = "Configuration file is failed to create.";
         try {
             File configurationFile = configurationFilePath.toFile();
             if (configurationFile.createNewFile()) {
@@ -209,10 +219,11 @@ public class CodeStyleCheckTool extends AnAction {
                 VirtualFileManager.getInstance().asyncRefresh(null);
                 return true;
             } else {
-                Messages.showMessageDialog("Configuration file is failed to create.", "", Messages.getErrorIcon());
+                Messages.showMessageDialog(errorMessage, "", Messages.getErrorIcon());
             }
         } catch (IOException e) {
-            Messages.showMessageDialog("Configuration file is failed to create.", "", Messages.getErrorIcon());
+            LOGGER.error(errorMessage, e);
+            Messages.showMessageDialog(errorMessage, "", Messages.getErrorIcon());
         }
         return false;
     }

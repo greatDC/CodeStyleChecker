@@ -1,6 +1,8 @@
 package info.woody.api.intellij.plugin.csct
 
 import groovy.util.slurpersupport.GPathResult
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Context data.
@@ -8,6 +10,8 @@ import groovy.util.slurpersupport.GPathResult
  * @since 15/06/2018
  */
 class CodeStyleCheckContext {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CodeStyleCheckContext)
 
     private String sourceDir
     private GPathResult rawXml
@@ -35,6 +39,7 @@ class CodeStyleCheckContext {
             }
             return context
         } catch (e) {
+            LOGGER.error('Failed to parse the configuration file, please check the content.', e)
             throw e
         }
     }
