@@ -130,16 +130,16 @@ public class CodeStyleCheckTool extends AnAction {
         codeStyleCheck.FILES_TO_SKIP = context.FILES_TO_SKIP();
         codeStyleCheck.GIT_FILES_TO_MERGE = context.GIT_FILES_TO_MERGE();
         CodeStyleCheckReport report = codeStyleCheck.doCheck();
-        ToolWindow codeStyleCheckResultView = ToolWindowManager.getInstance(e.getProject()).getToolWindow("Code scanning results");
-        ContentManager contentManager = codeStyleCheckResultView.getContentManager();
-        Content resultsContent = contentManager.getContent(0);
-        JComponent rootComponent = resultsContent.getComponent();
-        JTextPane summaryTextPane = (JTextPane) rootComponent.getClientProperty(SUMMARY_TEXT_PANE);
-        JTextPane detailsTextPane = (JTextPane) rootComponent.getClientProperty(DETAILS_TEXT_PANE);
-        rootComponent.putClientProperty(REPORT_INFO, report);
 
         // update the tool window
         SwingUtilities.invokeLater(() -> {
+            ToolWindow codeStyleCheckResultView = ToolWindowManager.getInstance(e.getProject()).getToolWindow("Code scanning results");
+            ContentManager contentManager = codeStyleCheckResultView.getContentManager();
+            Content resultsContent = contentManager.getContent(0);
+            JComponent rootComponent = resultsContent.getComponent();
+            JTextPane summaryTextPane = (JTextPane) rootComponent.getClientProperty(SUMMARY_TEXT_PANE);
+            JTextPane detailsTextPane = (JTextPane) rootComponent.getClientProperty(DETAILS_TEXT_PANE);
+            rootComponent.putClientProperty(REPORT_INFO, report);
             summaryTextPane.setText(generateSummaryReport(report, configurationFile));
             summaryTextPane.setCaretPosition(0);
             detailsTextPane.setText(null);

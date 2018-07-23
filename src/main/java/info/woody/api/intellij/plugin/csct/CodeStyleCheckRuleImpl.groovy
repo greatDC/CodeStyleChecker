@@ -52,12 +52,6 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         int totalLineCount = lines.length
         lines.eachWithIndex { line, index ->
 
-            int lineLength = line.length()
-            if (lineLength > MAX_LINE_LENGTH_CAN_BE_CHECKED) {
-                printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_EXTRAORDINARY_LONG)
-                return
-            }
-
             LINE_NUMBER = index + 1
             LINE_META = [:]
 
@@ -66,6 +60,11 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
             String trimmedSecureLine = secureLine.trim()
             int trimmedLineLength = trimmedLine.length()
 
+            int lineLength = line.length()
+            if (lineLength > MAX_LINE_LENGTH_CAN_BE_CHECKED) {
+                printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_EXTRAORDINARY_LONG)
+                return
+            }
             if (trimmedLine == '}' && trimmedLine.startsWith('@')) {
                 return // do nothing
             } else if (debug('DOCUMENTATION') && trimmedLine.matches('^/?[*].*$')) {
