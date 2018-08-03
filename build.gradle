@@ -14,7 +14,7 @@ plugins {
 }
 
 group 'info.woody'
-version '0.1.5'
+version '0.1.7'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -33,7 +33,7 @@ sourceSets {
     }
 }
 intellij {
-    version '2018.1.3'
+    version '2018.2'
     pluginName 'code-style-check-tool'
 } // https://github.com/JetBrains/gradle-intellij-plugin#configuration
 

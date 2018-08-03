@@ -71,6 +71,7 @@ class CodeStyleCheckIssues {
     public static final String LINE_BOOLEAN_LITERAL_COMPARE = "Never compare with Boolean literal!"
     public static final String LINE_LOG_EXCEPTION = "Please log the error like `LOGGER.error(message, e)` or `LOGGER.warn(message, e)`."
     public static final String LINE_TEST_METHOD_PREFIX_WRONG = "Test method should have a prefix `test`."
+    public static final String LINE_METHOD_VERB_STARTS = "The method names should start with a verb."
 
     static Map<String, String> ALL_CHECK_ITEMS() {
         Map<String, String> resultMap = [:]

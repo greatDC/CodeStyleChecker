@@ -1,5 +1,6 @@
 package info.woody.api.intellij.plugin.csct
 
+import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckDictionary
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckIssues
 
 import static info.woody.api.intellij.plugin.csct.util.Const.LINE_SEPARATOR
@@ -354,7 +355,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         if (LINE_NUMBER > 3 && !lines[index - 1].contains("@Override") && !lines[index - 3].contains("*")) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_METHOD_MISSING_DOCUMENTATION)
         }
-        String methodName = trimmedLine.replaceAll('^.*\\b([\\w+$]+)[(].+$', '$1')
+        String methodName = trimmedLine.replaceAll('^.*\\b([\\w$]+)[(].+$', '$1')
         if ((line.contains('private ') || line.contains('protected ')) && !PROD_FILE_NAME.contains('Base') && !PROD_FILE_NAME.contains('Common') &&
                 !content.replaceFirst('\\b' + methodName.replace('$', '\\$') + '\\b', '').contains(methodName)) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_UNUSED_METHOD)
@@ -364,6 +365,10 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         }
         if (debug('GROOVY PUBLIC') && PROD_FILE_NAME.endsWith('.groovy') && trimmedLine.startsWith('public ')) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_GROOVY_PUBLIC_IN_METHOD)
+        }
+        if (debug('METHOD FIRST VERB') && !isTest && trimmedLine.contains("(") &&
+                !CodeStyleCheckDictionary.getInstance().isBeginningWithVerb(methodName)) {
+            printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_METHOD_VERB_STARTS)
         }
     }
 

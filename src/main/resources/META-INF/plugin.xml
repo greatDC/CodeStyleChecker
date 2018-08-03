@@ -12,6 +12,8 @@
     ]]></description>
 
     <change-notes><![CDATA[
+      <p>05.08.2018 - Update the compatibility to IC-2018.2. New checks for method naming.</p>
+      <p>23.07.2018 - Run check job in background with a progress indicator. Add name convention check for Spring profile feature.</p>
       <p>17.07.2018 - Fix bugs caused by incorrect configuration. Optimise some check items.</p>
       <p>24.06.2018 - Now resulting report support 2 approaches to view issues: view by author; view by issue type.</p>
       <p>21.06.2018 - Support navigation within editor by line number.</p>
@@ -25,15 +27,18 @@
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
          on how to target different products -->
-    <!-- uncomment to enable plugin in all products
-    <depends>com.intellij.modules.lang</depends>
-    -->
+    <depends>com.intellij.modules.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- Add your extensions here -->
         <toolWindow id="Code scanning results" anchor="bottom"
                     factoryClass="info.woody.api.intellij.plugin.csct.CodeStyleCheckToolWindowFactory"
                     icon="/csct.png"></toolWindow>
+        <applicationConfigurable groupId="other" displayName="Code Style Check Tool"
+                                 id="preferences.CodeStyleCheckConfiguration"
+                                 instance="info.woody.api.intellij.plugin.csct.CodeStyleCheckConfigurable" />
+        <applicationService serviceInterface="info.woody.api.intellij.plugin.csct.CodeStyleCheckConfigurationService"
+                        serviceImplementation="info.woody.api.intellij.plugin.csct.CodeStyleCheckConfigurationService"/>
     </extensions>
 
     <actions>
@@ -44,6 +49,4 @@
             <add-to-group group-id="AnalyzeMenu" anchor="first"/>
         </action>
     </actions>
-
-    <depends>com.intellij.modules.java</depends>
 </idea-plugin>

@@ -18,6 +18,7 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
+import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckDictionary;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckLineError;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckReport;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckSummaryData;
@@ -71,6 +72,7 @@ public class CodeStyleCheckTool extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
+        CodeStyleCheckDictionary.getInstance();
         Optional<ContentEntry> contentEntry = Optional.ofNullable(null);
         Optional<Module> module = Arrays.stream(ModuleManager.getInstance(e.getProject()).getModules())
                 .filter(description -> description.getName().matches("^t-?RetailAPI$")).findAny();
