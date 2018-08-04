@@ -1,11 +1,11 @@
 package info.woody.api.intellij.plugin.csct.bean
 
-import info.woody.api.intellij.plugin.csct.util.Const
-
 import static info.woody.api.intellij.plugin.csct.util.Const.HTML_TAG_BR
 import static info.woody.api.intellij.plugin.csct.util.RichTextMaker.escapeContent
 import static info.woody.api.intellij.plugin.csct.util.RichTextMaker.newHighlight
 import static info.woody.api.intellij.plugin.csct.util.RichTextMaker.newLink
+import java.util.function.Function
+import java.util.stream.Collectors
 
 /**
  * File detail info.
@@ -72,22 +72,23 @@ class CodeStyleCheckDetailFileData extends CodeStyleCheckSummaryFileData {
      * @return Global issue report.
      */
     static String getReportForGlobalIssue(List<CodeStyleCheckGlobalError> errorList) {
-        StringBuilder reportContentBuilder = new StringBuilder()
-        Closure<StringBuilder> lineBuilder = { reportContentBuilder.append(HTML_TAG_BR) }
-        errorList.groupBy {
+        Map<String, List<CodeStyleCheckGlobalError>> errorListGroupByFile = errorList.groupBy {
             it.fileAbsolutePath
         }.sort {
             it.key
-        }.each {
+        }
+        Function<Map.Entry<String, List<CodeStyleCheckGlobalError>>, String> mapToString = { it ->
+            StringBuilder reportContentBuilder = new StringBuilder()
             String fileName = it.key.replaceFirst('^.*[/\\\\]', '')
             it.value.each {
                 String filePath = it.fileAbsolutePath
                 reportContentBuilder.append(newLink("${filePath}", fileName, fileName))
                         .append(" &lt;= ${newHighlight(String.format(it.error, it.args))}")
             }
-            lineBuilder()
+            reportContentBuilder.toString()
         }
-        reportContentBuilder.toString()
+
+        errorListGroupByFile.entrySet().parallelStream().map(mapToString).collect(Collectors.joining(HTML_TAG_BR))
     }
 
     /**
@@ -97,25 +98,21 @@ class CodeStyleCheckDetailFileData extends CodeStyleCheckSummaryFileData {
      * @return Line issue report.
      */
     static String getReportForLineIssue(List<CodeStyleCheckLineError> errorList) {
-        StringBuilder reportContentBuilder = new StringBuilder()
-        Closure<StringBuilder> lineBuilder = { reportContentBuilder.append(HTML_TAG_BR) }
-        errorList.groupBy {
+        Map<String, List<CodeStyleCheckLineError>> errorListGroupByFile =  errorList.groupBy {
             it.fileAbsolutePath
         }.sort {
             it.key
-        }.each {
-            String fileName = it.key.replaceFirst('^.*[/\\\\]', '')
-            reportContentBuilder.append(fileName).append(HTML_TAG_BR)
-            it.value.each {
+        }
+        Function<Map.Entry<String, List<CodeStyleCheckLineError>>, String> mapToString = { entry ->
+            String fileName = entry.key.replaceFirst('^.*[/\\\\]', '')
+            fileName + HTML_TAG_BR + entry.value.collect {
                 String filePath = it.fileAbsolutePath
                 String lineNumber = it.lineNumber.toString()
                 String padding = lineNumber.padRight(PADDING_WIDTH).replace(lineNumber, '')
-                reportContentBuilder.append(newLink("${filePath}#${lineNumber}", lineNumber, lineNumber)).append(padding)
-                        .append(": ${escapeContent(it.line.trim())} &lt;= ${newHighlight(String.format(it.error, it.args))}")
-                lineBuilder()
-            }
-            lineBuilder()
+                newLink("${filePath}#${lineNumber}", lineNumber, lineNumber) +
+                "${padding}: ${escapeContent(it.line.trim())} &lt;= ${newHighlight(String.format(it.error, it.args))}"
+            }.join(HTML_TAG_BR)
         }
-        reportContentBuilder.toString()
+        errorListGroupByFile.entrySet().parallelStream().map(mapToString).collect(Collectors.joining(HTML_TAG_BR * 2))
     }
 }

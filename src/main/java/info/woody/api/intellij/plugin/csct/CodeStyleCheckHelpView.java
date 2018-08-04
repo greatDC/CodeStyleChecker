@@ -4,8 +4,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.ui.components.JBList;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckIssues;
 
-import javax.swing.DefaultListModel;
-import javax.swing.JPanel;
+import javax.swing.*;
 
 /**
  * Help view in the tool window.

@@ -4,6 +4,7 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.LogicalPosition;
 import com.intellij.openapi.editor.ScrollType;
 import com.intellij.openapi.project.Project;
+import com.intellij.vcs.log.util.StopWatch;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckDetailFileData;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckGlobalError;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckLineError;
@@ -98,14 +99,16 @@ public class CodeStyleCheckResultView {
                 List<CodeStyleCheckDetailFileData> fileDataList = report.getDetailData().getFileDataList();
                 if (SummaryLinkType.ISSUE.name().equals(linkType)) {
                     String issueItem = linkValue;
-                    List<CodeStyleCheckGlobalError> allGlobalIssues = fileDataList.stream()
+                    StopWatch stopWatch = StopWatch.start("outer");
+                    List<CodeStyleCheckGlobalError> allGlobalIssues = fileDataList.parallelStream()
                             .map(CodeStyleCheckDetailFileData::getGlobalErrorList).flatMap(List::stream)
                             .filter(codeStyleCheckGlobalError -> codeStyleCheckGlobalError.getError().equals(issueItem))
                             .collect(Collectors.toList());
-                    List<CodeStyleCheckLineError> allLineIssues = fileDataList.stream()
+                    List<CodeStyleCheckLineError> allLineIssues = fileDataList.parallelStream()
                             .map(CodeStyleCheckDetailFileData::getLineErrorList).flatMap(List::stream)
                             .filter(codeStyleCheckLineError -> codeStyleCheckLineError.getError().equals(issueItem))
                             .collect(Collectors.toList());
+                    stopWatch.report();
                     String details = "";
                     if (!allGlobalIssues.isEmpty()) {
                         details = CodeStyleCheckDetailFileData.getReportForGlobalIssue(allGlobalIssues);
@@ -116,7 +119,7 @@ public class CodeStyleCheckResultView {
                     detailsTextPane.setCaretPosition(0);
                 } else if (SummaryLinkType.AUTHOR.name().equals(linkType)) {
                     String authorsKey = linkValue;
-                    String details = fileDataList.stream()
+                    String details = fileDataList.parallelStream()
                             .filter(fileData -> fileData.getAuthorsKey().equals(authorsKey))
                             .map(CodeStyleCheckDetailFileData::getReportForAuthor).collect(Collectors.joining(HTML_TAG_BR));
                     detailsTextPane.setText(String.format("<pre>%s</pre>", details));

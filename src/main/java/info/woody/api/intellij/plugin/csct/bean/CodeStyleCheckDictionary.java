@@ -37,12 +37,41 @@ public class CodeStyleCheckDictionary {
         return CodeStyleCheckDictionaryFactory.dictionary;
     }
 
-    public boolean isVerb(String word) {
+    public boolean isVerb(String word, boolean isUnique) {
         List<String> stringList = wordMap.get(word.toLowerCase());
         if (stringList == null) {
+            if (word.endsWith("s")) {
+                stringList = wordMap.get(word.replaceFirst(".$", ""));
+            }
+            if (stringList == null) {
+                return false;
+            }
+        }
+        if (isUnique && stringList.stream().anyMatch(s -> s.indexOf("n.") > -1 || s.indexOf("a.") > -1 || s.indexOf("adj.") > -1)) {
             return false;
         }
         return stringList.stream().anyMatch(s -> s.indexOf("v.") > -1);
+    }
+
+    public boolean isVerb(String word) {
+        return isVerb(word, false);
+    }
+
+    public boolean isUniqueVerb(String word) {
+        return isVerb(word, true);
+    }
+
+    public boolean isNotVerb(String word) {
+        List<String> stringList = wordMap.get(word.toLowerCase());
+        if (stringList == null) {
+            if (word.endsWith("s")) {
+                stringList = wordMap.get(word.replaceFirst(".$", ""));
+            }
+            if (stringList == null) {
+                return false;
+            }
+        }
+        return stringList.stream().anyMatch(s -> s.matches("^.*\\b[^v][.].*$"));
     }
 
     public boolean isWord(String word) {
@@ -65,7 +94,11 @@ public class CodeStyleCheckDictionary {
         return first.orElse(null);
     }
 
-    public boolean isBeginningWithVerb(String camelCaseWord) {
+    public boolean isVerbBeginning(String camelCaseWord) {
         return isVerb(getFirstWord(camelCaseWord));
+    }
+
+    public boolean isUniqueVerbBeginning(String camelCaseWord) {
+        return isUniqueVerb(getFirstWord(camelCaseWord));
     }
 }

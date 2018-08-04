@@ -12,13 +12,13 @@
     ]]></description>
 
     <change-notes><![CDATA[
-      <p>05.08.2018 - Update the compatibility to IC-2018.2. New checks for method naming.</p>
-      <p>23.07.2018 - Run check job in background with a progress indicator. Add name convention check for Spring profile feature.</p>
-      <p>17.07.2018 - Fix bugs caused by incorrect configuration. Optimise some check items.</p>
-      <p>24.06.2018 - Now resulting report support 2 approaches to view issues: view by author; view by issue type.</p>
-      <p>21.06.2018 - Support navigation within editor by line number.</p>
-      <p>20.06.2018 - Totally we support 54 code style check items for Java and Groovy.</p>
-      <p>05.06.2018 - Initial version for release. Please contact me if any issues.</p>
+      <p>05.08.2018 - 0.1.7 - Update the compatibility to IC-2018.2; optimise some checks; add naming checks for methods and classes.</p>
+      <p>23.07.2018 - 0.1.6 - Run check job in background with a progress indicator. Add name convention check for Spring profile feature.</p>
+      <p>17.07.2018 - 0.1.5 - Fix bugs caused by incorrect configuration. Optimise some check items.</p>
+      <p>24.06.2018 - 0.1.4 - Now resulting report support 2 approaches to view issues: view by author; view by issue type.</p>
+      <p>21.06.2018 - 0.1.3 - Support navigation within editor by line number.</p>
+      <p>20.06.2018 - 0.1.2 - Totally we support 54 code style check items for Java and Groovy.</p>
+      <p>05.06.2018 - 0.1.1 - Initial version for release. Please contact me if any issues.</p>
     ]]>
     </change-notes>
 

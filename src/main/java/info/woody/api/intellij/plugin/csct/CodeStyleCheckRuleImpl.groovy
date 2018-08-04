@@ -89,7 +89,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
             } else if (debug('SINGLE { IN A LINE') && line.matches('^\\s*[{]\\s*$')) {
                 printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_LEFT_CURLY_BRACE_LINE)
             } else if (trimmedLineLength) {
-                if (debug('CHECK NullPointerException') && trimmedLine.matches('^.*[.]equals(IgnoreCase)?[(]([^)]+[.])?[A-Z_]{2,}[)].*$')) {
+                if (debug('CHECK NullPointerException') && trimmedLine.matches('^.*[.]equals(IgnoreCase)?[(](([^)]+[.])?[A-Z0-9_]{2,}|"[^"]*")[)].*$')) {
                     printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_CONSTANT_AS_LEFT_OPERAND)
                 }
                 if (debug('ENUM COMPARISON') && trimmedSecureLine.matches('^.+\\b\\w+Enum[.][A-Z_]+[.]equals.+$')) {
@@ -105,7 +105,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                 ) {
                     if (trimmedLine.matches('(?i)^.+?"([a-z0-9._]+|\\W)".*$') // string pattern only
                             || trimmedSecureLine.replaceAll('\\[\\d+\\]', '') // remove index pattern for list element
-                            .matches('^.*\\b([2-9]|[1-9]\\d+|\\d+[.]\\d+)\\b.*$') // number pattern only, excluding 0 and 1
+                            .matches('^.*\\b([3-9]|[1-9]\\d+|\\d+[.]\\d+)\\b.*$') // number pattern only, excluding 0, 1 and 2
                         // if statement
                         // equals
                         // =
@@ -192,6 +192,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                     printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_REDUCE_MULTIPLE_CALCULATION)
                 }
                 if (debug('RETURN STATEMENT') && index > 2 && totalLineCount - LINE_NUMBER > 2 && lines[index - 1].trim().startsWith('if ') &&
+                        (lines[index - 1] + trimmedLine + lines[index + 2].trim()).length() < 100 &&
                         trimmedLine.startsWith('return') && lines[index + 2].trim().startsWith('return')) {
                     printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_OPTIMIZE_RETURN)
                 }
@@ -259,7 +260,8 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                 .matches('^[0-9A-Z{<].*[.:,;!?>]$')) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_DOCUMENTATION_FORMAT)
         }
-        if (lineWithoutHtml.replaceAll('[{][^}]+[}]', '').replaceAll('(Chinese|International)', '')
+        if (!trimmedLine.toLowerCase().contains("created by") &&
+                lineWithoutHtml.replaceAll('[{][^}]+[}]', '').replaceAll('(Chinese|International)', '')
                 .matches('^[*] (@\\w+\\s+\\w+\\s+)?[A-Z][a-z].*[A-Z][a-z].*$')) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_CODE_IN_DOCUMENTATION)
         }
@@ -267,10 +269,12 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
 
     private void checkClassInterfaceEnum(String[] lines, int index, String line,  String trimmedLine, boolean isTest) {
         LINE_META.CLASS = true
-        if (!isTest && !line.contains("interface") && !line.contains("abstract") && !line.contains("Base") && !line.contains("Const") && !line.contains("Constant") &&
+        if (!isTest && !line.contains("interface") && !line.contains("abstract") && !line.contains("Base") && !line.contains("Const") &&
+                !line.contains("Constant") && !PROD_FILE_NAME.contains('Advice') &&
                 !ALL_FILES_NAME.contains(PROD_FILE_NAME.replaceAll('.(groovy|java)$', 'Test.java')) &&
                 !ALL_FILES_NAME.contains(PROD_FILE_NAME.replaceAll('.(groovy|java)$', 'Test.groovy'))) {
             if (!lines[0].matches('^.*\\b(models?|beans?|pojos?|constants?)\\b.*$') && !PROD_FILE_NAME.contains('Base') &&
+                    !line[0].contains('.input') &&
                     !trimmedLine.contains('enum ') && !trimmedLine.contains('interface ') && !trimmedLine.contains('Enum ') &&
                     !PROD_FILE_NAME.contains('Config') && !PROD_FILE_NAME.contains('Bean') && !PROD_FILE_NAME.contains('Exception')) {
                 printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_MISSING_UNIT_TEST)
@@ -281,6 +285,10 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         }
         if (PROD_FILE_NAME.endsWith('.groovy') && trimmedLine.startsWith('public ')) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_GROOVY_PUBLIC_IN_CLASS)
+        }
+        if ((line.contains('class ') || line.contains('interface ')) &&
+                CodeStyleCheckDictionary.getInstance().isUniqueVerbBeginning(trimmedLine.replaceAll('^.*(class|interface)\\s+(\\w+).*', '$2'))) {
+            printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_CLASS_VERB_STARTS)
         }
     }
 
@@ -366,8 +374,11 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         if (debug('GROOVY PUBLIC') && PROD_FILE_NAME.endsWith('.groovy') && trimmedLine.startsWith('public ')) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_GROOVY_PUBLIC_IN_METHOD)
         }
-        if (debug('METHOD FIRST VERB') && !isTest && trimmedLine.contains("(") &&
-                !CodeStyleCheckDictionary.getInstance().isBeginningWithVerb(methodName)) {
+        if (debug('METHOD SETUP') && methodName.equalsIgnoreCase('setUp') && 'setUp' != methodName) {
+            printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_TEST_METHOD_SETUP)
+        } else if (debug('METHOD FIRST VERB') && !isTest && trimmedLine.contains("(") && !content.contains('@Configuration') &&
+                !lines[0].matches('^.*\\b(models?|beans?|pojos?|constants?)\\b.*$') &&
+                !CodeStyleCheckDictionary.getInstance().isVerbBeginning(methodName)) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_METHOD_VERB_STARTS)
         }
     }
@@ -376,6 +387,9 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         if (!AUTHORS) {
             printGlobalWarning CodeStyleCheckIssues.GLOBAL_NO_AUTHORS
             AUTHORS << "Anonymous"
+        }
+        if (!content.contains('@author') || !content.contains('@since')) {
+            printGlobalWarning CodeStyleCheckIssues.GLOBAL_DOC_AUTHOR_SINCE
         }
         if (content.matches('(?s)^.*(\\s*\\r?+\\n){3}.*$')) {
             printGlobalWarning CodeStyleCheckIssues.GLOBAL_CONSECUTIVE_EMPTY_LINES
@@ -466,6 +480,8 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
     }
 }
 
+// http://checkstyle.sourceforge.net/google_style.html
+//
 // NEW FEATURES
 // DONE - Documentation is missing for class constructor
 // DONE - LOGGER the exception from catch clause
@@ -492,3 +508,15 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
 // check xdist comment or documentation
 // complex if expression is better to be assigned a well-named variable to improve the readability
 // optimise acronym naming convention
+// TODO: LOGGER should be private
+// TODO: field/variable contains underscore: field `[a-z]_|_[a-z]`; variable `([a-z]_|_[a-z]) = .*` : name_, mName, s_name and kName, are not used.
+// TODO: Constructor definition in wrong order
+// TODO: Instance variable definition in wrong order
+// TODO: Detects empty statements (standalone ";" semicolon).
+
+
+
+
+
+// TODO(OPTIONAL): if (valid()) return false; else return true;
+// TODO(OPTIONAL): Rationale: Each instance variable gets initialized twice, to the same value.
