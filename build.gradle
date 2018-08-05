@@ -33,7 +33,7 @@ sourceSets {
     }
 }
 intellij {
-    version '2018.2'
+    version cscIntellijVersion
     pluginName 'code-style-check-tool'
 } // https://github.com/JetBrains/gradle-intellij-plugin#configuration
 
