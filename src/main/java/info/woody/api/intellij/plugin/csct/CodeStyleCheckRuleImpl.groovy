@@ -1,8 +1,9 @@
 package info.woody.api.intellij.plugin.csct
 
-import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckDictionary
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckIssues
+import info.woody.api.intellij.plugin.csct.util.Const
 
+import static info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckDictionary.getDictionary
 import static info.woody.api.intellij.plugin.csct.util.Const.LINE_SEPARATOR
 /**
  * <p>http://www.oracle.com/technetwork/java/codeconvtoc-136057.html</p>
@@ -187,6 +188,9 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                         }
                     }
                 }
+                if (debug('EMPTY STATEMENT') && ";" == trimmedLine) {
+                    printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_EMPTY_STATEMENT)
+                }
                 if (debug('FOR STATEMENT') && trimmedSecureLine.startsWith('for') &&
                         (trimmedSecureLine.contains('.length') || trimmedSecureLine.contains('.size()'))) {
                     printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_REDUCE_MULTIPLE_CALCULATION)
@@ -202,9 +206,6 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                 if (debug('SEMICOLON IN GROOVY') && PROD_FILE_NAME.endsWith('groovy') && trimmedLine.endsWith(';')) {
                     printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_REDUNDANT_GROOVY_SEMICOLON)
                 }
-                if (debug('PROPER NOUN NAMING') && trimmedSecureLine.matches('^(.*[a-z0-9][A-Z]{3,}\\w+).*$')) {
-                    printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_IMPROPER_ACRONYM)
-                }
                 if (debug('COMPARE WITH BOOLEAN LITERAL') &&
                         trimmedSecureLine.matches('^.*(==\\s*(true|false)|(true|false)\\s*==|==\\s*Boolean.(TRUE|FALSE)|Boolean.(TRUE|FALSE)\\s*==).*$')) {
                     printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_BOOLEAN_LITERAL_COMPARE)
@@ -214,6 +215,22 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                         && (!trimmedSecureLine.matches('^LOGGER[.](error|warn).*[,].*$')
                         && !lines[index + 1].matches('^LOGGER[.](error|warn).*[,].*$'))) {
                     printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_LOG_EXCEPTION)
+                }
+                if (debug('LOCAL VARIABLE') && trimmedSecureLine.matches('^(\\w+)\\s+(\\w+) ?=.*$')) {
+                    String variableName = trimmedSecureLine.replaceAll('^.*(\\w+) ?=.*$', '$1').trim()
+                    if(variableName.contains('_')) {
+                        printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_SNAKE_CASE_NAMING)
+                    }
+                    if (debug('PROPER NOUN NAMING') && variableName.matches(Const.REGEX_IMPROPER_ACRONYM_NAMING)) {
+                        printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_IMPROPER_ACRONYM_NAMING)
+                    }
+                }
+                if (debug('LOCAL VARIABLE') && trimmedLine.matches('^.*\\b(\\w+([.]\\w+)?) ?!= ?null.*equals[(]\\1[)].*$')) {
+                    if (trimmedLine.contains('"".equals')) {
+                        printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_UNNECESSARY_EMPTY_CHECK)
+                    } else {
+                        printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_UNNECESSARY_NULL_CHECK)
+                    }
                 }
             }
         }
@@ -269,6 +286,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
 
     private void checkClassInterfaceEnum(String[] lines, int index, String line,  String trimmedLine, boolean isTest) {
         LINE_META.CLASS = true
+        String typeName = trimmedLine.replaceAll('^.*(class|interface|enum)\\s+(\\w+).*', '$2')
         if (!isTest && !line.contains("interface") && !line.contains("abstract") && !line.contains("Base") && !line.contains("Const") &&
                 !line.contains("Constant") && !PROD_FILE_NAME.contains('Advice') &&
                 !ALL_FILES_NAME.contains(PROD_FILE_NAME.replaceAll('.(groovy|java)$', 'Test.java')) &&
@@ -286,9 +304,11 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         if (PROD_FILE_NAME.endsWith('.groovy') && trimmedLine.startsWith('public ')) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_GROOVY_PUBLIC_IN_CLASS)
         }
-        if ((line.contains('class ') || line.contains('interface ')) &&
-                CodeStyleCheckDictionary.getInstance().isUniqueVerbBeginning(trimmedLine.replaceAll('^.*(class|interface)\\s+(\\w+).*', '$2'))) {
+        if ((line.contains('class ') || line.contains('interface ')) && getDictionary().isUniqueVerbBeginning(typeName)) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_CLASS_VERB_STARTS)
+        }
+        if (debug('PROPER NOUN NAMING') && typeName.matches(Const.REGEX_IMPROPER_ACRONYM_NAMING)) {
+            printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_IMPROPER_ACRONYM_NAMING)
         }
     }
 
@@ -341,6 +361,11 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                     fieldName != fieldName.toUpperCase()) {
                 printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_CONSTANT_NAME_CONVENTION)
             }
+        } else if (debug('FILED CONTAINING UNDERSCORE') && !fieldName.matches('^[A-Z_]+$') && fieldName.contains('_')) {
+            printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_SNAKE_CASE_NAMING)
+        }
+        if (debug('PROPER NOUN NAMING') && fieldName.matches(Const.REGEX_IMPROPER_ACRONYM_NAMING)) {
+            printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_IMPROPER_ACRONYM_NAMING)
         }
         /*
         @Deprecated
@@ -364,6 +389,9 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_METHOD_MISSING_DOCUMENTATION)
         }
         String methodName = trimmedLine.replaceAll('^.*\\b([\\w$]+)[(].+$', '$1')
+        if (methodName.contains('_')) {
+            printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_SNAKE_CASE_NAMING)
+        }
         if ((line.contains('private ') || line.contains('protected ')) && !PROD_FILE_NAME.contains('Base') && !PROD_FILE_NAME.contains('Common') &&
                 !content.replaceFirst('\\b' + methodName.replace('$', '\\$') + '\\b', '').contains(methodName)) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_UNUSED_METHOD)
@@ -377,9 +405,11 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         if (debug('METHOD SETUP') && methodName.equalsIgnoreCase('setUp') && 'setUp' != methodName) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_TEST_METHOD_SETUP)
         } else if (debug('METHOD FIRST VERB') && !isTest && trimmedLine.contains("(") && !content.contains('@Configuration') &&
-                !lines[0].matches('^.*\\b(models?|beans?|pojos?|constants?)\\b.*$') &&
-                !CodeStyleCheckDictionary.getInstance().isVerbBeginning(methodName)) {
+                !lines[0].matches('^.*\\b(models?|beans?|pojos?|constants?)\\b.*$') && !getDictionary().isVerbBeginning(methodName)) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_METHOD_VERB_STARTS)
+        }
+        if (debug('PROPER NOUN NAMING') && methodName.matches(Const.REGEX_IMPROPER_ACRONYM_NAMING)) {
+            printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_IMPROPER_ACRONYM_NAMING)
         }
     }
 
@@ -483,40 +513,19 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
 // http://checkstyle.sourceforge.net/google_style.html
 //
 // NEW FEATURES
-// DONE - Documentation is missing for class constructor
-// DONE - LOGGER the exception from catch clause
-// DONE - Format well check should strip string literal first
-// DONE - getHTMLChar check should strip string literal first
-// DONE - print check should check word only: exclude __print
 // IN PLAN - static final check should happen as line check
-// DONE - don't check unit test if the package name ends with "bean" or "model"
-// DONE - Detect the codes commented out
-// DONE - Class should has authors
-// DONE - Add new check for assert / Assert
-// DONE - No documentation content for method
-// Empty line should exist between documentation description and @param, @return, @exception
-// DONE - The class for LOGGER should be same as the current class
-// static should come before non-static
-// indent badly
-// disable the specified check items
-// identical expression cannot be extracted if it's inside java stream
-// add issue title for details of same issue category
-// DONE - line number for details of same issue category should be padded
-// auto expand folded lines
-// compare with empty string
-// compare with null, Groovy
-// check xdist comment or documentation
-// complex if expression is better to be assigned a well-named variable to improve the readability
-// optimise acronym naming convention
+// TODO: disable the specified check items
+// TODO: identical expression cannot be extracted if it's inside java stream
+// TODO: add issue title for details of same issue category
+// TODO: auto expand folded lines
+// TODO: compare with empty string
+// TODO: compare with null, Groovy
+// TODO: check xdist comment or documentation
+// TODO: complex if expression is better to be assigned a well-named variable to improve the readability
 // TODO: LOGGER should be private
-// TODO: field/variable contains underscore: field `[a-z]_|_[a-z]`; variable `([a-z]_|_[a-z]) = .*` : name_, mName, s_name and kName, are not used.
 // TODO: Constructor definition in wrong order
 // TODO: Instance variable definition in wrong order
-// TODO: Detects empty statements (standalone ";" semicolon).
-
-
-
-
-
-// TODO(OPTIONAL): if (valid()) return false; else return true;
+//
 // TODO(OPTIONAL): Rationale: Each instance variable gets initialized twice, to the same value.
+// TODO: Separate author report from file report
+// TODO: Asynchronously create reports to improve the display performance

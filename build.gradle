@@ -14,7 +14,7 @@ plugins {
 }
 
 group 'info.woody'
-version '0.1.7'
+version cscVersion
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -38,7 +38,7 @@ intellij {
 } // https://github.com/JetBrains/gradle-intellij-plugin#configuration
 
 publishPlugin {
-    username 'zhengwei.ren@company.com'
-    password 'password'
-    channels 'alpha'
+    username cscPublishUsername
+    password cscPublishPassword
+    channels cscPublishChannels
 }

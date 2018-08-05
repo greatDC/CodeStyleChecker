@@ -14,4 +14,6 @@ class Const {
     public static final String SIGN_HASH = "#"
     public static final String REPORT_LINE_SEPARATOR = SIGN_DASH * 50
     public static final String SING_SINGLE_QUOTE = "'"
+
+    public static final String REGEX_IMPROPER_ACRONYM_NAMING = '^.*[a-z0-9][A-Z]{2,}[a-z].*$'
 }

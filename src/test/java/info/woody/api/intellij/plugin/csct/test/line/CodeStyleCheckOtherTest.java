@@ -24,7 +24,7 @@ public class CodeStyleCheckOtherTest extends BaseUnitTest {
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_EXCEED_140_CHARS));
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_ENUM_IMPORT));
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_REDUCE_MULTIPLE_CALCULATION));
-        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_IMPROPER_ACRONYM));
+        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_IMPROPER_ACRONYM_NAMING));
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_BOOLEAN_LITERAL_COMPARE));
     }
 

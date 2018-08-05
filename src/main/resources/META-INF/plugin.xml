@@ -23,7 +23,7 @@
     </change-notes>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-    <idea-version since-build="173.0"/>
+    <idea-version since-build="181.*" until-build="182.*"/>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
          on how to target different products -->
@@ -32,10 +32,8 @@
     <extensions defaultExtensionNs="com.intellij">
         <!-- Add your extensions here -->
         <toolWindow id="Code scanning results" anchor="bottom"
-                    factoryClass="info.woody.api.intellij.plugin.csct.CodeStyleCheckToolWindowFactory"
-                    icon="/csct.png"></toolWindow>
-        <applicationConfigurable groupId="other" displayName="Code Style Check Tool"
-                                 id="preferences.CodeStyleCheckConfiguration"
+                    factoryClass="info.woody.api.intellij.plugin.csct.CodeStyleCheckToolWindowFactory" icon="/csct.png"></toolWindow>
+        <applicationConfigurable groupId="other" displayName="Code Style Check Tool" id="preferences.CodeStyleCheckConfiguration"
                                  instance="info.woody.api.intellij.plugin.csct.CodeStyleCheckConfigurable" />
         <applicationService serviceInterface="info.woody.api.intellij.plugin.csct.CodeStyleCheckConfigurationService"
                         serviceImplementation="info.woody.api.intellij.plugin.csct.CodeStyleCheckConfigurationService"/>
@@ -43,9 +41,8 @@
 
     <actions>
         <!-- Add your actions here -->
-        <action id="CodeStyleCheckTool"
-                class="info.woody.api.intellij.plugin.csct.CodeStyleCheckTool"
-                text="Code Style Check" description="Code Style Check">
+        <action id="CodeStyleCheckTool" text="Code Style Check" description="Code Style Check"
+                class="info.woody.api.intellij.plugin.csct.CodeStyleCheckTool">
             <add-to-group group-id="AnalyzeMenu" anchor="first"/>
         </action>
     </actions>

@@ -72,7 +72,7 @@ public class CodeStyleCheckTool extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
-        CodeStyleCheckDictionary.getInstance();
+        CodeStyleCheckDictionary.getDictionary();
         Optional<ContentEntry> contentEntry = Optional.ofNullable(null);
         Optional<Module> module = Arrays.stream(ModuleManager.getInstance(e.getProject()).getModules())
                 .filter(description -> description.getName().matches("^t-?RetailAPI$")).findAny();
@@ -105,6 +105,7 @@ public class CodeStyleCheckTool extends AnAction {
             openFileInEditor(configurationFile.getAbsolutePath(), e.getProject());
             return;
         }
+        ToolWindowManager.getInstance(e.getProject()).getToolWindow("Code scanning results").show(null);
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
             ProgressManager.getInstance().run(new Task.Backgroundable(e.getProject(), "Code Style Check Progress") {
                 @Override

@@ -33,7 +33,7 @@ public class CodeStyleCheckDictionary {
     private CodeStyleCheckDictionary() {
     }
 
-    public static CodeStyleCheckDictionary getInstance() {
+    public static CodeStyleCheckDictionary getDictionary() {
         return CodeStyleCheckDictionaryFactory.dictionary;
     }
 
