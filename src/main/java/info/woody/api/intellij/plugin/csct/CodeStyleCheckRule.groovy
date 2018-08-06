@@ -5,7 +5,7 @@ import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckDetailData
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckDetailFileData
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckGlobalError
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckLineError
-import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckReport
+import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckReportData
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckSummaryData
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckSummaryFileData
 
@@ -53,7 +53,7 @@ abstract class CodeStyleCheckRule {
      *
      * @return Issues report.
      */
-    CodeStyleCheckReport doCheck() {
+    CodeStyleCheckReportData doCheck() {
         File dir = new File(MY_SOURCE_DIR?:"")
         if (!dir.exists() || dir.isFile()) {
             throw new CodeStyleCheckException("`SourceDir` in configuration file has to be a valid file path: " + dir.getAbsolutePath())
@@ -169,12 +169,12 @@ abstract class CodeStyleCheckRule {
 
     /**
      * Calculate statistics.
-     * @return Instance of {@link CodeStyleCheckReport}.
+     * @return Instance of {@link CodeStyleCheckReportData}.
      */
-    private CodeStyleCheckReport calculateStatistics() {
+    private CodeStyleCheckReportData calculateStatistics() {
         CodeStyleCheckSummaryData summaryData = new CodeStyleCheckSummaryData()
         CodeStyleCheckDetailData detailData = new CodeStyleCheckDetailData()
-        CodeStyleCheckReport report = new CodeStyleCheckReport(summaryData, detailData, ALL_FILE_COUNT)
+        CodeStyleCheckReportData report = new CodeStyleCheckReportData(summaryData, detailData, ALL_FILE_COUNT)
         STATISTICS_ALL_IN_ONE.each {
             Map fileDetailMap = it.value
             List authors = fileDetailMap.get('AUTHORS')

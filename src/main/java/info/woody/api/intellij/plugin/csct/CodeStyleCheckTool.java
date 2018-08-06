@@ -20,7 +20,8 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckDictionary;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckLineError;
-import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckReport;
+import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckReportData;
+import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckReportSummary;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckSummaryData;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -63,7 +64,9 @@ public class CodeStyleCheckTool extends AnAction {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CodeStyleCheckTool.class);
 
-    public static final String SUMMARY_TEXT_PANE = "summaryTextPane";
+    public static final String SUMMARY_OVERVIEW_TEXT_PANE = "summaryOverviewTextPane";
+    public static final String SUMMARY_FILE_TEXT_PANE = "summaryFileTextPane";
+    public static final String SUMMARY_AUTHOR_TEXT_PANE = "summaryAuthorTextPane";
     public static final String DETAILS_TEXT_PANE = "detailsTextPane";
     public static final String REPORT_INFO = "REPORT_INFO";
     private static final String ACTION_ID_SAVE_ALL = "SaveAll";
@@ -106,7 +109,7 @@ public class CodeStyleCheckTool extends AnAction {
             return;
         }
         ToolWindowManager.getInstance(e.getProject()).getToolWindow("Code scanning results").show(null);
-        ApplicationManager.getApplication().executeOnPooledThread(() -> {
+        ApplicationManager.getApplication().executeOnPooledThread(() ->
             ProgressManager.getInstance().run(new Task.Backgroundable(e.getProject(), "Code Style Check Progress") {
                 @Override
                 public void run(@NotNull ProgressIndicator indicator) {
@@ -119,8 +122,8 @@ public class CodeStyleCheckTool extends AnAction {
                     };
                     doCodeStyleCheck(e, configurationFile, context, updateProgress);
                 }
-            });
-        });
+            })
+        );
     }
 
     private void doCodeStyleCheck(AnActionEvent e, File configurationFile, CodeStyleCheckContext context,
@@ -132,19 +135,24 @@ public class CodeStyleCheckTool extends AnAction {
         codeStyleCheck.FILENAME_PATTERN_TO_SKIP = context.FILENAME_PATTERN_TO_SKIP();
         codeStyleCheck.FILES_TO_SKIP = context.FILES_TO_SKIP();
         codeStyleCheck.GIT_FILES_TO_MERGE = context.GIT_FILES_TO_MERGE();
-        CodeStyleCheckReport report = codeStyleCheck.doCheck();
+        CodeStyleCheckReportData report = codeStyleCheck.doCheck();
         ToolWindow codeStyleCheckResultView = ToolWindowManager.getInstance(e.getProject()).getToolWindow("Code scanning results");
         ContentManager contentManager = codeStyleCheckResultView.getContentManager();
         Content resultsContent = contentManager.getContent(0);
         JComponent rootComponent = resultsContent.getComponent();
-        JTextPane summaryTextPane = (JTextPane) rootComponent.getClientProperty(SUMMARY_TEXT_PANE);
+        JTextPane summaryOverviewTextPane = (JTextPane) rootComponent.getClientProperty(SUMMARY_OVERVIEW_TEXT_PANE);
+        JTextPane summaryFileTextPane = (JTextPane) rootComponent.getClientProperty(SUMMARY_FILE_TEXT_PANE);
+        JTextPane summaryAuthorTextPane = (JTextPane) rootComponent.getClientProperty(SUMMARY_AUTHOR_TEXT_PANE);
         JTextPane detailsTextPane = (JTextPane) rootComponent.getClientProperty(DETAILS_TEXT_PANE);
         rootComponent.putClientProperty(REPORT_INFO, report);
 
         // update the tool window
         SwingUtilities.invokeLater(() -> {
-            summaryTextPane.setText(generateSummaryReport(report, configurationFile));
-            summaryTextPane.setCaretPosition(0);
+            CodeStyleCheckReportSummary reportSummary = generateSummaryReport(report, configurationFile);
+            summaryOverviewTextPane.setText(reportSummary.getOverviewSummary());
+            summaryFileTextPane.setText(reportSummary.getFileSummary());
+            summaryAuthorTextPane.setText(reportSummary.getAuthorSummary());
+            summaryFileTextPane.setCaretPosition(0);
             detailsTextPane.setText(null);
             contentManager.setSelectedContent(resultsContent);
             codeStyleCheckResultView.setTitle("Time: " + LocalDateTime.now());
@@ -168,14 +176,8 @@ public class CodeStyleCheckTool extends AnAction {
      * @param configurationFile The configuration file.
      * @return The formatted report of HTML format.
      */
-    private String generateSummaryReport(CodeStyleCheckReport report, File configurationFile) {
-        StringBuilder summaryReportBuilder = new StringBuilder("<pre>");
+    private CodeStyleCheckReportSummary generateSummaryReport(CodeStyleCheckReportData report, File configurationFile) {
         CodeStyleCheckSummaryData summaryData = report.getSummaryData();
-        String authors = summaryData.getAuthorsKeySet().stream()
-                .map(author -> format("<span style='text-align:center'>%s delivered %d issues.</span>",
-                        newLink("AUTHOR#" + author, author, author),
-                        report.getDetailData().getMapAuthorsErrors().computeIfAbsent(author, (v) -> 0)))
-                .collect(joining(HTML_TAG_BR));
         int fileCount = report.getFileCount();
         int fileCountWithIssues = summaryData.getFileCountWithIssues();
         int fileCountWithoutIssues = fileCount - fileCountWithIssues;
@@ -186,21 +188,32 @@ public class CodeStyleCheckTool extends AnAction {
                 .mapToInt(entry -> entry.getValue().size()).sum();
         int errorCount = globalErrorCount + lineErrorCount;
         String configurationFileName = configurationFile.getName();
-        summaryReportBuilder.append(String.format("The configuration file: %s",
-                newLink(configurationFile.getAbsolutePath(), configurationFileName, configurationFileName)))
-                .append(HTML_TAG_BR).append(format("Thanks for:<br>%s", authors))
+
+        CodeStyleCheckReportSummary reportSummary = new CodeStyleCheckReportSummary();
+        reportSummary.setOverviewSummary(new StringBuilder("<pre>")
+                .append(String.format("The configuration file: %s",
+                        newLink(configurationFile.getAbsolutePath(), configurationFileName, configurationFileName)))
                 .append(HTML_TAG_BR).append(format("%d issue(s) were found in %d file(s).", errorCount, fileCountWithIssues, fileCount))
                 .append(HTML_TAG_BR).append(format("Totally %d out of %d files were clear.", fileCountWithoutIssues, fileCount))
                 .append(HTML_TAG_BR).append(format("Cleanness rate is %,.2f%%.", (fileCountWithoutIssues + 0.0d) / fileCount * 100))
-                .append(HTML_TAG_HR);
+                .append(HTML_TAG_HR).append("</pre>").toString()
+        );
 
-        summaryData.getFilesGroupByError().entrySet().stream().forEach(entry -> {
+        String fileSummary = summaryData.getFilesGroupByError().entrySet().stream().map(entry -> {
             String size = String.valueOf(entry.getValue().size());
             String error = entry.getKey();
-            summaryReportBuilder.append(HTML_TAG_BR).append(format("%s ERRORS FOR: %s",
-                    newLink("ISSUE#" + error, error, size), newHighlight(error)));
-        });
-        return summaryReportBuilder.append("</pre>").toString();
+            return format("%s ERRORS FOR: %s", newLink("ISSUE#" + error, error, size), newHighlight(error));
+        }).collect(joining(HTML_TAG_BR));
+        reportSummary.setFileSummary(format("<pre>%s</pre>", fileSummary));
+
+        String authorSummary = summaryData.getAuthorsKeySet().stream()
+                .map(author -> format("<span style='text-align:center'>%s delivered %d issues.</span>",
+                        newLink("AUTHOR#" + author, author, author),
+                        report.getDetailData().getMapAuthorsErrors().computeIfAbsent(author, (v) -> 0)))
+                .collect(joining(HTML_TAG_BR));
+        reportSummary.setAuthorSummary(format("<pre>Thanks for:<br>%s</pre>", authorSummary));
+
+        return reportSummary;
     }
 
     /**

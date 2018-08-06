@@ -527,6 +527,5 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
 // TODO: Instance variable definition in wrong order
 //
 // TODO(OPTIONAL): Rationale: Each instance variable gets initialized twice, to the same value.
-// TODO: Separate author report from file report
 // TODO: Asynchronously create reports to improve the display performance
 // TODO: Advice define a variable for complex boolean expression to improve the readability: ^[\t ]*\bif[^{\n]{100,}$

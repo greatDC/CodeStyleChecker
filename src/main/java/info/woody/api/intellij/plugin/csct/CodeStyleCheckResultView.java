@@ -8,19 +8,20 @@ import com.intellij.vcs.log.util.StopWatch;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckDetailFileData;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckGlobalError;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckLineError;
-import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckReport;
+import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckReportData;
 import info.woody.api.intellij.plugin.csct.util.CodeStyleCheckEnum.SummaryLinkType;
 
-import javax.swing.JEditorPane;
-import javax.swing.JPanel;
-import javax.swing.JTextPane;
+import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static info.woody.api.intellij.plugin.csct.CodeStyleCheckTool.DETAILS_TEXT_PANE;
 import static info.woody.api.intellij.plugin.csct.CodeStyleCheckTool.REPORT_INFO;
-import static info.woody.api.intellij.plugin.csct.CodeStyleCheckTool.SUMMARY_TEXT_PANE;
+import static info.woody.api.intellij.plugin.csct.CodeStyleCheckTool.SUMMARY_AUTHOR_TEXT_PANE;
+import static info.woody.api.intellij.plugin.csct.CodeStyleCheckTool.SUMMARY_FILE_TEXT_PANE;
+import static info.woody.api.intellij.plugin.csct.CodeStyleCheckTool.SUMMARY_OVERVIEW_TEXT_PANE;
 import static info.woody.api.intellij.plugin.csct.util.Const.HTML_TAG_BR;
 import static info.woody.api.intellij.plugin.csct.util.Const.SIGN_HASH;
 import static info.woody.api.intellij.plugin.csct.util.EditorUtils.openFileInEditor;
@@ -34,7 +35,9 @@ import static info.woody.api.intellij.plugin.csct.util.EditorUtils.openFileInEdi
 public class CodeStyleCheckResultView {
     private JPanel consolePanel;
     private JTextPane detailsTextPane;
-    private JTextPane summaryTextPane;
+    private JTextPane summaryFileTextPane;
+    private JTextPane summaryAuthorTextPane;
+    private JTextPane summaryOverviewTextPane;
 
     private Project project;
 
@@ -61,10 +64,11 @@ public class CodeStyleCheckResultView {
      * Initiate components.
      */
     private void init() {
-        setupTextPane(SUMMARY_TEXT_PANE, summaryTextPane);
-        setupTextPane(DETAILS_TEXT_PANE, detailsTextPane);
-
-        detailsTextPane.addHyperlinkListener(e -> {
+        SummaryHyperlinkListener listener = new SummaryHyperlinkListener();
+        setupTextPane(SUMMARY_OVERVIEW_TEXT_PANE, summaryOverviewTextPane, listener);
+        setupTextPane(SUMMARY_FILE_TEXT_PANE, summaryFileTextPane, listener);
+        setupTextPane(SUMMARY_AUTHOR_TEXT_PANE, summaryAuthorTextPane, listener);
+        setupTextPane(DETAILS_TEXT_PANE, detailsTextPane, (e -> {
             if (e.getEventType() != HyperlinkEvent.EventType.ACTIVATED) {
                 return;
             }
@@ -83,9 +87,28 @@ public class CodeStyleCheckResultView {
                 editor.getScrollingModel().scrollToCaret(ScrollType.CENTER);
                 editor.getSelectionModel().selectLineAtCaret();
             }
-        });
+        }));
 
-        summaryTextPane.addHyperlinkListener(hyperlinkEvent -> {
+    }
+
+    /**
+     * Set up the text pane.
+     *
+     * @param idTextPane Text pane's ID.
+     * @param textPane   Instance of text pane.
+     * @param listener   Hyperlink listener.
+     */
+    private void setupTextPane(String idTextPane, JTextPane textPane, HyperlinkListener listener) {
+        consolePanel.putClientProperty(idTextPane, textPane);
+        textPane.setEditable(false);
+        textPane.setEditorKit(JEditorPane.createEditorKitForContentType("text/html"));
+        textPane.addHyperlinkListener(listener);
+    }
+
+    private class SummaryHyperlinkListener implements HyperlinkListener {
+
+        @Override
+        public void hyperlinkUpdate(HyperlinkEvent hyperlinkEvent) {
             if (hyperlinkEvent.getEventType() != HyperlinkEvent.EventType.ACTIVATED) {
                 return;
             }
@@ -95,7 +118,7 @@ public class CodeStyleCheckResultView {
                 String linkType = hrefMeta[0];
                 String linkValue = hrefMeta[1];
 
-                CodeStyleCheckReport report = (CodeStyleCheckReport) consolePanel.getClientProperty(REPORT_INFO);
+                CodeStyleCheckReportData report = (CodeStyleCheckReportData) consolePanel.getClientProperty(REPORT_INFO);
                 List<CodeStyleCheckDetailFileData> fileDataList = report.getDetailData().getFileDataList();
                 if (SummaryLinkType.ISSUE.name().equals(linkType)) {
                     String issueItem = linkValue;
@@ -128,18 +151,6 @@ public class CodeStyleCheckResultView {
             } else {
                 openFileInEditor(description, project);
             }
-        });
-    }
-
-    /**
-     * Set up the text pane.
-     *
-     * @param idTextPane Text pane's ID.
-     * @param textPane   Instance of text pane.
-     */
-    private void setupTextPane(String idTextPane, JTextPane textPane) {
-        consolePanel.putClientProperty(idTextPane, textPane);
-        textPane.setEditable(false);
-        textPane.setEditorKit(JEditorPane.createEditorKitForContentType("text/html"));
+        }
     }
 }

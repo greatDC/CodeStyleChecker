@@ -57,7 +57,7 @@ public class BaseUnitTest {
      * @return Errors.
      */
     private List<String> getErrors(boolean isGlobal) {
-        CodeStyleCheckReport report = rule.doCheck();
+        CodeStyleCheckReportData report = rule.doCheck();
         CodeStyleCheckDetailData detailData = report.getDetailData();
         Assert.assertNotNull(detailData);
         List<CodeStyleCheckDetailFileData> fileDataList = detailData.getFileDataList();
