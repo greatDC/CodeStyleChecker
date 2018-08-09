@@ -29,5 +29,6 @@ public class CodeStyleCheckMethodTest extends BaseUnitTest {
         List<String> errors = getLineErrors();
 
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_TEST_METHOD_PREFIX_WRONG));
+        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_TEST_METHOD_SETUP));
     }
 }

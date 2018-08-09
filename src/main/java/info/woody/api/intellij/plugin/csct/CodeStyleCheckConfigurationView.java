@@ -2,21 +2,28 @@ package info.woody.api.intellij.plugin.csct;
 
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.ui.components.JBCheckBox;
-import com.intellij.ui.components.JBPanel;
 
-import javax.swing.JButton;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
 
+/**
+ * Plugin configuration view.
+ *
+ * @author zhengwei.ren
+ * @since 04/08/2018
+ */
 public class CodeStyleCheckConfigurationView {
     private boolean modified;
     private JPanel settingPanel;
     private JBCheckBox checkBoxExperimental;
 
+    /**
+     * Constructor.
+     */
     public CodeStyleCheckConfigurationView() {
         checkBoxExperimental.addChangeListener(e -> {
             this.modified = true;
-            ServiceManager.getService(CodeStyleCheckConfigurationService.class).getState().setExperimentalEnabled(((JBCheckBox)e.getSource()).isSelected());
+            ServiceManager.getService(CodeStyleCheckConfigurationService.class).getState()
+                    .setExperimentalEnabled(((JBCheckBox)e.getSource()).isSelected());
         });
     }
 

@@ -35,7 +35,8 @@ public class CodeStyleCheckToolTest extends BaseUnitTest {
     public void emptyGitFilesToMerge() {
         rule.GIT_FILES_TO_MERGE = null;
         CodeStyleCheckReportData codeStyleCheckReportData = rule.doCheck();
-        Map<String, List<CodeStyleCheckGlobalError>> globalErrorsGroupByFilePath = codeStyleCheckReportData.getSummaryData().getGlobalErrorsGroupByFilePath();
+        Map<String, List<CodeStyleCheckGlobalError>> globalErrorsGroupByFilePath =
+                codeStyleCheckReportData.getSummaryData().getGlobalErrorsGroupByFilePath();
         Assert.assertNotNull(globalErrorsGroupByFilePath);
         Assert.assertEquals(0, globalErrorsGroupByFilePath.size());
     }

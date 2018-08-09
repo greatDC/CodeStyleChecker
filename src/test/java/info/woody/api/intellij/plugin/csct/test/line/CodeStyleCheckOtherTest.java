@@ -14,7 +14,7 @@ public class CodeStyleCheckOtherTest extends BaseUnitTest {
         rule.GIT_FILES_TO_MERGE = SAMPLE_PROJECT_SRC + "/src/test/groovy/info/woody/api/intellij/plugin/csct/sample/java/other/SampleJavaOtherIssueTest.java";
         List<String> errors = getLineErrors();
 
-        Assert.assertEquals(2, getErrorCount(errors, CodeStyleCheckIssues.LINE_CONSTANT_AS_LEFT_OPERAND));
+        Assert.assertEquals(3, getErrorCount(errors, CodeStyleCheckIssues.LINE_CONSTANT_AS_LEFT_OPERAND));
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_ENUM_COMPARE));
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_ASSERT));
         Assert.assertEquals(6, getErrorCount(errors, CodeStyleCheckIssues.LINE_NOT_FORMATTED));
@@ -24,7 +24,7 @@ public class CodeStyleCheckOtherTest extends BaseUnitTest {
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_EXCEED_140_CHARS));
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_ENUM_IMPORT));
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_REDUCE_MULTIPLE_CALCULATION));
-        Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_IMPROPER_ACRONYM_NAMING));
+        Assert.assertEquals(5, getErrorCount(errors, CodeStyleCheckIssues.LINE_IMPROPER_ACRONYM_NAMING));
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_BOOLEAN_LITERAL_COMPARE));
     }
 

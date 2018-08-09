@@ -1,5 +1,8 @@
 package info.woody.api.intellij.plugin.csct.bean;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.Arrays;
@@ -12,24 +15,34 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
+/**
+ * Plugin dictionary.
+ *
+ * @author zhengwei.ren
+ * @since 04/08/2018
+ */
 public class CodeStyleCheckDictionary {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(CodeStyleCheckDictionary.class);
     private static final Map<String, List<String>> wordMap = new HashMap<>();
 
     private static class CodeStyleCheckDictionaryFactory {
-        public static CodeStyleCheckDictionary dictionary = new CodeStyleCheckDictionary();
+        public static final CodeStyleCheckDictionary dictionary = new CodeStyleCheckDictionary();
 
         static {
-            try (InputStreamReader inputStreamReader = new InputStreamReader(CodeStyleCheckDictionary.class.getResource("/dictionary.txt").openStream());
+            try (InputStreamReader inputStreamReader = new InputStreamReader(
+                    CodeStyleCheckDictionary.class.getResource("/dictionary.txt").openStream());
                  BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
-                wordMap.putAll(bufferedReader.lines()
-                        .collect(Collectors.groupingByConcurrent(lineToKey -> lineToKey.replaceAll("^(\\w+).+$", "$1").toLowerCase(), toList())));
+                wordMap.putAll(bufferedReader.lines().collect(Collectors.groupingByConcurrent(
+                        lineToKey -> lineToKey.replaceAll("^(\\w+).+$", "$1").toLowerCase(), toList())));
             } catch (Exception e) {
-                e.printStackTrace();
+                LOGGER.error("Failed to initialise `CodeStyleCheckDictionary.wordMap`.", e);
             }
         }
     }
 
+    /**
+     * Constructor.
+     */
     private CodeStyleCheckDictionary() {
     }
 
@@ -38,19 +51,19 @@ public class CodeStyleCheckDictionary {
     }
 
     public boolean isVerb(String word, boolean isUnique) {
-        List<String> stringList = wordMap.get(word.toLowerCase());
-        if (stringList == null) {
+        List<String> wordList = wordMap.get(word.toLowerCase());
+        if (wordList == null) {
             if (word.endsWith("s")) {
-                stringList = wordMap.get(word.replaceFirst(".$", ""));
+                wordList = wordMap.get(word.replaceFirst(".$", ""));
             }
-            if (stringList == null) {
+            if (wordList == null) {
                 return false;
             }
         }
-        if (isUnique && stringList.stream().anyMatch(s -> s.indexOf("n.") > -1 || s.indexOf("a.") > -1 || s.indexOf("adj.") > -1)) {
+        if (isUnique && wordList.stream().anyMatch(s -> s.indexOf("n.") > -1 || s.indexOf("a.") > -1 || s.indexOf("adj.") > -1)) {
             return false;
         }
-        return stringList.stream().anyMatch(s -> s.indexOf("v.") > -1);
+        return wordList.stream().anyMatch(s -> s.indexOf("v.") > -1);
     }
 
     public boolean isVerb(String word) {
@@ -62,16 +75,16 @@ public class CodeStyleCheckDictionary {
     }
 
     public boolean isNotVerb(String word) {
-        List<String> stringList = wordMap.get(word.toLowerCase());
-        if (stringList == null) {
+        List<String> wordList = wordMap.get(word.toLowerCase());
+        if (wordList == null) {
             if (word.endsWith("s")) {
-                stringList = wordMap.get(word.replaceFirst(".$", ""));
+                wordList = wordMap.get(word.replaceFirst(".$", ""));
             }
-            if (stringList == null) {
+            if (wordList == null) {
                 return false;
             }
         }
-        return stringList.stream().anyMatch(s -> s.matches("^.*\\b[^v][.].*$"));
+        return wordList.stream().anyMatch(s -> s.matches("^.*\\b[^v][.].*$"));
     }
 
     public boolean isWord(String word) {

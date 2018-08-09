@@ -1,5 +1,8 @@
 package info.woody.api.intellij.plugin.csct.bean
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 import java.lang.reflect.Modifier
 
 /**
@@ -9,6 +12,8 @@ import java.lang.reflect.Modifier
  * @since 14/06/2018
  */
 class CodeStyleCheckIssues {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CodeStyleCheckIssues)
 
     public static final String GLOBAL_NO_AUTHORS = "AUTHOR CANNOT BE FOUND IN CLASS DOCUMENTATION."
     public static final String GLOBAL_DOC_AUTHOR_SINCE = "IT IS BETTER TO HAVE INFO FOR AUTHOR AND SINCE AS `@author` AND `@since`."
@@ -21,9 +26,12 @@ class CodeStyleCheckIssues {
     public static final String GLOBAL_BAD_CLASS_NAMING_WITH_PROFILE = "CLASS NAME SHOULD BE LIKE `PhoneValidatorChineseImpl` OR `BookingServiceInternationalImpl`."
     public static final String GLOBAL_MOCKITO_ORDER = "CORRECT FIELD DECLARATION ORDER FOR UNIT TEST: @Rule, @Spy, @Mock, @InjectMocks."
     public static final String GLOBAL_MISS_ERROR_CODE_TEST = "UNIT TEST MISSED ASSERTION FOR BELOW ERROR(S):%s"
+    public static final String GLOBAL_CONSTRUCTOR_AFTER_METHOD = "CONSTRUCTOR SHOULD BE DEFINED BEFORE NON-CONSTRUCTOR METHODS."
+    public static final String GLOBAL_CONSTANT_AFTER_FIELD = "CONSTANT SHOULD BE ALWAYS DEFINED BEFORE OTHER FIELDS."
+    public static final String GLOBAL_STATIC_AFTER_FIELD = "STATIC FIELDS SHOULD BE DEFINED BEFORE NON-STATIC FIELDS."
 
     public static final String LINE_EXTRAORDINARY_LONG = "The line is too long to check, please wrap properly then check again."
-    public static final String LINE_INCORRECT_CREATION_DATE_FORMAT = "Date format for @since should be dd/mm/yyyy."
+    public static final String LINE_INCORRECT_CREATION_DATE_FORMAT = "Date format should be dd/mm/yyyy."
     public static final String LINE_DOCUMENTATION_FORMAT = "Documentation should start with a capital and end with `.`, `:`, `,`, `!`, `?` or `>`."
     public static final String LINE_DOCUMENTATION_REDUNDANT_EMPTY_LINES = "Please remove redundant empty lines!"
     public static final String LINE_CODE_IN_DOCUMENTATION = "Only first letter is allowed to be a capital unless it`s a proper noun or an acronym; use {@link ...} or {@code ...} if it refers to code."
@@ -62,7 +70,7 @@ class CodeStyleCheckIssues {
     public static final String LINE_ENUM_IMPORT = "Import enum type directly, e.g GenderEnum.MALE. Don`t forget to clear useless import."
     public static final String LINE_IDENTICAL_EXPRESSIONS = "Identical expressions can be extracted as a variable to eliminate repetition: %s"
     public static final String LINE_REDUCE_MULTIPLE_CALCULATION = "Please define a variable to store the value of length/size."
-    public static final String LINE_OPTIMIZE_RETURN = "Please optimize multiple `return` to one; sometime ternary operator might be helpful."
+    public static final String LINE_OPTIMIZE_RETURN = "Please optimize multiple `return` to one; sometime ternary operator `(expr) ? x : y` might be helpful."
     public static final String LINE_MOVE_UPPER_ADVICE = "Could this line be moved upper?"
     public static final String LINE_REDUNDANT_GROOVY_SEMICOLON = "Semicolon is unnecessary in Groovy."
     @Deprecated public static final String LINE_GROOVY_PUBLIC_IN_FIELD = "Keyword `public` is redundant for non-static fields in Groovy."
@@ -79,6 +87,7 @@ class CodeStyleCheckIssues {
     public static final String LINE_SNAKE_CASE_NAMING = "Please use CamelCase instead of snake_case."
     public static final String LINE_UNNECESSARY_NULL_CHECK = "Is null check here really necessary?"
     public static final String LINE_UNNECESSARY_EMPTY_CHECK = "Could org.apache.commons.lang.StringUtils be helpful?"
+    public static final String LINE_GROOVY_NULL_CHECK = "Please use proper check expression for null. In Groovy`s boolean expressions, null is false while !null is true."
 
     static Map<String, String> ALL_CHECK_ITEMS() {
         Map<String, String> resultMap = [:]
@@ -93,7 +102,7 @@ class CodeStyleCheckIssues {
                 int charCompareResult = Character.compare(field1Char, field2Char)
                 return (charCompareResult == 0) ? f1.get(null).toString() <=> f2.get(null).toString() : charCompareResult
             } catch (IllegalAccessException e) {
-                e.printStackTrace()
+                LOGGER.error('Failed to `sort` check items for check items generation!', e)
                 return 0
             }
         }.each { field ->
@@ -105,7 +114,7 @@ class CodeStyleCheckIssues {
                     resultMap.put(field.name, checkItem)
                 }
             } catch (IllegalAccessException e) {
-                e.printStackTrace()
+                LOGGER.error('Failed to `process` check items for check items generation!', e)
             }
         }
         resultMap

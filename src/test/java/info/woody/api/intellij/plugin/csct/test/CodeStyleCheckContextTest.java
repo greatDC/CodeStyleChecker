@@ -35,7 +35,9 @@ public class CodeStyleCheckContextTest {
                 .collect(Collectors.joining(SIGN_HASH));
         Assert.assertEquals("^.*(Controller).*$", context.FILENAME_PATTERN_TO_SKIP());
         Assert.assertNotNull(context.FILES_TO_SKIP());
-        Assert.assertArrayEquals(Stream.of("ErrorCodes.java", "ConfigService.java", "TestHelper.java").toArray(), context.FILES_TO_SKIP().toArray());
+        Assert.assertArrayEquals(
+                Stream.of("ErrorCodes.java", "ConfigService.java", "TestHelper.java").toArray(),
+                context.FILES_TO_SKIP().toArray());
         Assert.assertEquals("/Users/renzhengwei/Workstation/Workspace/git/CodeStyleChecker/src", context.MY_SOURCE_DIR());
         Assert.assertNotNull(context.GIT_FILES_TO_MERGE());
         Assert.assertEquals(gitFilesToMerge, context.GIT_FILES_TO_MERGE().trim().replaceAll("\\r?\\n", "").replaceAll(" +", SIGN_HASH));
