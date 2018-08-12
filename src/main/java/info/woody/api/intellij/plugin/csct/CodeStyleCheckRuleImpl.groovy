@@ -652,3 +652,5 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
 // TODO: Documentation doesn't contain parameters
 // TODO: Calculate file count
 // TODO: Report files with errors when scanning is done
+// TODO: All validators should be a subtype of interface Validator.
+// TODO: Validator shouldn't has non-inherit public methods

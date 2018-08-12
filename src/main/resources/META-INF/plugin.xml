@@ -12,7 +12,9 @@
     ]]></description>
 
     <change-notes><![CDATA[
-      <p>12.08.2018 - 182181.1.8 - Split issue report into 3 summary reports: overview, author and file. Add method naming check, should start with a verb; Add comparison check with empty string; Add comparison check with null, Groovy; Add snake case naming check for fields, methods and variables; Optimise method/variable/class detection; Optimise the extraction of author; remove the @since check; Add check for missing parameter documentation.</p>
+      <p> `*` means main versions which might be compatible with different main version IntelliJ, such as 181(2018.1.*) and 182(2018.2.*).</p>
+      <p>15.08.2018 - *.1.9 - New option for settings is available for `Code Style Check Tool`.</p>
+      <p>12.08.2018 - *.1.8 - Split issue report into 3 summary reports: overview, author and file. Add method naming check, should start with a verb; Add comparison check with empty string; Add comparison check with null, Groovy; Add snake case naming check for fields, methods and variables; Optimise method/variable/class detection; Optimise the extraction of author; remove the @since check; Add check for missing parameter documentation.</p>
       <p>05.08.2018 - 0.1.7 - Update the compatibility to IC-2018.2; optimise some checks; add naming checks for methods and classes.</p>
       <p>23.07.2018 - 0.1.6 - Run check job in background with a progress indicator. Add name convention check for Spring profile feature.</p>
       <p>17.07.2018 - 0.1.5 - Fix bugs caused by incorrect configuration. Optimise some check items.</p>
