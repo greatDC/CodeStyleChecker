@@ -43,5 +43,6 @@ public class CodeStyleCheckConfigurable implements Configurable {
     public void reset() {
         CodeStyleCheckConfigurationService configurationService = ServiceManager.getService(CodeStyleCheckConfigurationService.class);
         configurationView.getCheckBoxExperimental().setSelected(configurationService.getState().isExperimentalEnabled());
+        configurationView.getCheckBoxTestMethodPrefixedByTest().setSelected(configurationService.getState().isTestPrefixInTestForced());
     }
 }

@@ -33,7 +33,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         ALL_FILE_COUNT++
         debug(PROD_FILE_NAME)
         boolean isTest = PROD_FILE_NAME.toLowerCase().contains("test") || file.path.matches('^.*src(/|\\\\)test\\1.*$')
-        String content = file.getText('UTF-8')
+        String content = CACHED_FILE_CONTENT.get(file) // file.getText('UTF-8')
         String[] lines = content.split("""\r?\n""")
         __println LINE_SEPARATOR * 3 + '*' * 50
         PROD_FILE_ABSOLUTE_PATH = file.getAbsolutePath()
@@ -46,7 +46,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                 continue
             }
             boolean isDocPattern = line.trim().startsWith("*")
-            if (isDocPattern && line.matches('(?i)^.*created? by ((\\\\w+)([.]\\\\w+)*).*$')) { // extract author from comment
+            if (isDocPattern && line.matches('(?i)^.*created? by ((\\w+)([.]\\w+)*).*$')) { // extract author from comment
                 AUTHORS << line.replaceAll('(?i)^.*created? by ((\\w+)([.]\\w+)*).*$', '$1').trim()
             } else if (isDocPattern && line.contains('@author')) { // extract author from documentation
                 AUTHORS << line.replaceAll('(?i)^.*@author ([\\w.]+).*$', '$1').trim()
@@ -91,17 +91,17 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                     trimmedSecureLine.matches('^(private|protected|public).+=.+$')) &&
                     !trimmedSecureLine.matches('^.* (class|interface|enum|abstract) .*$')) {
                 checkField(content, lines, index, line, trimmedLine, trimmedSecureLine, isTest)
-            } else if (debug('CLASS') && trimmedSecureLine.matches('^.*\\b(class|interface|enum)\\b.*$')
-                    /*trimmedSecureLine.matches('^(private|protected|public)?[^(]*(class|interface|enum)[^();.\'="]+[{]$')*/) {
+            } else if (debug('CLASS') && trimmedSecureLine.matches('^[^.(]*\\b(class|interface|enum)\\b.*$')) {
                 checkClassInterfaceEnum(lines, index, line, trimmedLine, isTest)
             } else if (debug('CONSTRUCTOR') && !trimmedSecureLine.endsWith(";") && !trimmedSecureLine.contains("=")
-                    && trimmedSecureLine.matches("^.*${PROD_FILE_NAME.replaceFirst('[.].*$', '')}[(].*")) {
+                    && trimmedSecureLine.matches("^.*\\b${PROD_FILE_NAME.replaceFirst('[.].*$', '')}\\s*[(].*")) {
                 checkConstructor(lines, index, line)
-            } else if (debug('METHOD') && trimmedSecureLine.replaceAll('<[^<>]+>', '')
+            } else if (debug('METHOD') && !trimmedSecureLine.contains(' new ') &&
+                    trimmedSecureLine.replaceAll('@\\w+', '').replaceAll('<[^<>]+>', '')
                     .replaceAll('<[^<>]+>', '').replaceAll('<[^<>]+>', '')
                     .replaceAll('(\\[|\\])', '').matches('^([\\w]+\\s+)+[\\w$]+\\s*[(][\\w, ]*([)] *[{])?$')
                     /*secureLine.matches('^(\t| {3,5})((public|protected|private)( ))?[\\w$]+(<[^()]+>)? [\\w$]+[(][^+-=)]*[)]\\s*[{]$')*/) {
-                checkMethod(content, lines, index, line, trimmedLine, isTest)
+                checkMethod(content, lines, totalLineCount, index, line, trimmedLine, isTest)
             } else if (trimmedLineLength) {
                 checkOthers(lines, totalLineCount, index, line, trimmedLine, trimmedSecureLine, lineLength, isTest)
             }
@@ -136,8 +136,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         if (debug('ENUM COMPARISON') && trimmedSecureLine.matches('^.+\\b\\w+Enum[.][A-Z_]+[.]equals.+$')) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_ENUM_COMPARE)
         }
-        if (debug('TEST ASSERT') && isTest && ((PROD_FILE_NAME.endsWith('java') && trimmedSecureLine.split('\\W').contains('assert')) ||
-                (PROD_FILE_NAME.endsWith('groovy') && trimmedSecureLine.split('\\W').contains('Assert')))) {
+        if (debug('TEST ASSERT') && isTest && PROD_FILE_NAME.endsWith('java') && trimmedSecureLine.split('\\W').contains('assert')) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_ASSERT)
         }
         if (debug('LITERAL') && !isTest && !trimmedLine.startsWith('@')
@@ -159,8 +158,8 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         if (debug('FORMAT') && trimmedSecureLine.matches('^.*(\\b(if|while|for|switch)[(]|\\w+[={]|[=}]\\w+|[)][{]).*$')) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_NOT_FORMATTED)
         }
-        if (debug('GROOVY NULL CHECK') && PROD_FILE_NAME.endsWith('.groovy') &&
-                trimmedLine.matches('^.*((!=|==) ?null|null ?(!=|==)).*$')) {
+        if (debug('GROOVY NULL CHECK') && PROD_FILE_NAME.endsWith('.groovy') && !trimmedSecureLine.contains('assert') &&
+                trimmedSecureLine.matches('^.*((!=|==) ?null|null ?(!=|==)).*$')) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_GROOVY_NULL_CHECK)
         }
         if (debug('REQUESTPROPERTIES') && trimmedLine.contains('"requestProperties"')) {
@@ -273,8 +272,8 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
             if (debug('PROPER NOUN NAMING') && variableName.matches(Const.REGEX_IMPROPER_ACRONYM_NAMING)) {
                 printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_IMPROPER_ACRONYM_NAMING)
             }
-            if (debug('BAD NAMING') && variableName.matches('^(\\w+(Str(ing)?|Redis)([A-Z]\\w+)|(str(ing)?|redis)[A-Z]\\w+)$')) {
-                printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_BAD_VARIABLE_PATTERN)
+            if (debug('BAD NAMING') && variableName.matches('^(\\w+(Str(ing)?|Redis)([A-Z]\\w+)?|(str(ing)?|redis)[A-Z]\\w+)$')) {
+                    printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_BAD_VARIABLE_PATTERN)
             }
         }
         if (debug('CATCH CLAUSE') && !isTest && LINE_NUMBER > 8
@@ -333,18 +332,16 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                 !trimmedLine.replaceFirst('^[*] (@(param|throws) \\w+|@return)?', '').trim()
                         .matches('^[0-9A-Z{<].*[.:,;!?>]$')) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_DOCUMENTATION_FORMAT)
-        } else if (lineWithoutHtml.contains('created by') || lineWithoutHtml.contains('create by') ||
-                trimmedLine.matches('^.*\\d{1,2}/\\d{1,2}/20\\d{1,2}.*$')) {
-            if (!lineWithoutHtml.matches('''^.*\\b([012][0-9]|30|31)/(0[1-9]|1[0-2])/201[0-9]\\b.*$''')) {
-                printWarning(lineWithoutHtml, LINE_NUMBER, CodeStyleCheckIssues.LINE_INCORRECT_CREATION_DATE_FORMAT)
-            }
+        } else if (lineWithoutHtml.matches('(?i)^.*created? by.*$') && trimmedLine.matches('^.*\\d{1,2}/\\d{1,2}/20\\d{1,2}.*$') &&
+                !lineWithoutHtml.matches('''^.*\\b(0?[1-9]|[12][0-9]|30|31)/(0?[1-9]|1[0-2])/201[0-9]\\b.*$''')) {
+            printWarning(lineWithoutHtml, LINE_NUMBER, CodeStyleCheckIssues.LINE_INCORRECT_CREATION_DATE_FORMAT)
         } else if (trimmedLine == '*') {
             if (nextTrimmedLine == '*') {
                 printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_DOCUMENTATION_REDUNDANT_EMPTY_LINES)
             }
         }
-        if (lineWithoutHtml.replaceAll('[{][^}]+[}]', '')
-                .matches('^[*] (@\\w+\\s+\\w+\\s+)?[A-Z][a-z].*[a-z][A-Z].*$')) {
+        if (lineWithoutHtml.replaceAll('[{][^}]+[}]', '').matches('^[*] (@\\w+\\s+\\w+\\s+)?[A-Z][a-z].*[a-z][A-Z].*$') &&
+                !trimmedLine.matches('(?i)^.*created? by.*\\d{1,2}/\\d{1,2}/\\d{4}.*$')) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_CODE_IN_DOCUMENTATION)
         }
     }
@@ -461,22 +458,64 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         }
     }
 
-    private void checkMethod(String content, String[] lines, int index, String line, String trimmedLine, boolean isTest) {
+    private void checkMethod(String content, String[] lines, int totalLineCount, int index, String line, String trimmedLine, boolean isTest) {
         LINE_META.METHOD = true
         FILE_META.FIRST_METHOD_LINE_NUMBER = LINE_NUMBER
-        if (LINE_NUMBER > 3 && !lines[index - 1].contains("@Override") && !lines[index - 3].contains("*")) {
-            printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_METHOD_MISSING_DOCUMENTATION)
+        if (LINE_NUMBER > 3 && !lines[index - 1].contains("@Override")) {
+            if (!lines[index - 3].contains("*")) {
+                printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_METHOD_MISSING_DOCUMENTATION)
+            } else {
+                int offset = 1
+                String methodSignature = line
+                while (!methodSignature.contains(')') && index + offset < totalLineCount) {
+                    methodSignature += lines[index + offset] + " "
+                    offset++
+                }
+                String[] allParameters = methodSignature
+                        .replaceAll('<[^<>]+>', '').replaceAll('<[^<>]+>', '')
+                        .replaceAll('<[^<>]+>', '').findAll('\\w+\\s+\\w+\\s*[,)]')
+                        .collect { it.trim().replaceFirst('\\W+$', '').replaceFirst('\\w+', '').trim() }
+                int parameterCount = allParameters.length
+                if (parameterCount) {
+                    offset = index - 3
+                    while (lines[offset].replace(Character.toString((char)160), ' ').trim().matches('^(/[*])?[*].*$')) {
+                        offset--
+                        if (offset < 1) {
+                            break
+                        }
+                    }
+                    offset++
+                    StringBuilder parameterDocAreaBuilder = new StringBuilder()
+                    (offset..<index).each {
+                        parameterDocAreaBuilder.append(lines[it]).append('\n')
+                    }
+                    allParameters.each {
+                        offset = 0
+                        if (!parameterDocAreaBuilder.contains("@param ${it}")) {
+                            while (offset < parameterCount) {
+                                int lineIndexWithParam = index + offset
+                                if (lines[lineIndexWithParam].contains(" ${it}")) {
+                                    printWarning(lines[lineIndexWithParam], lineIndexWithParam + 1, CodeStyleCheckIssues.LINE_PARAM_MISSING_DOCUMENTATION, it)
+                                    break
+                                }
+                                offset++
+                            }
+                        }
+                    }
+                }
+            }
         }
-        String methodName = trimmedLine.replaceAll('^.*\\b([\\w$]+)[(].*$', '$1')
+        String methodName = trimmedLine.replaceAll('^.*\\b([\\w$]+)\\s*[(].*$', '$1')
         if (methodName.contains('_')) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_SNAKE_CASE_NAMING)
         }
         if ((line.contains('private ') || line.contains('protected ')) &&
-                !PROD_FILE_NAME.contains('Base') && !PROD_FILE_NAME.contains('Common') &&
+                !PROD_FILE_NAME.contains('Base') && !PROD_FILE_NAME.contains('Common') && lines[index - 1].trim() != "@Override" &&
                 !content.replaceFirst('\\b' + methodName.replace('$', '\\$') + '\\b', '').contains(methodName)) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_UNUSED_METHOD)
         }
-        if (debug('TEST PREFIX') && isTest && lines[index - 1].trim().startsWith("@Test") && !trimmedLine.contains(" test")) {
+        if (debug('TEST PREFIX') && isTest && SETTINGS.isTestPrefixInTestForced() &&
+                lines[index - 1].trim().startsWith("@Test") && !trimmedLine.contains(" test")) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_TEST_METHOD_PREFIX_WRONG)
         }
         if (debug('GROOVY PUBLIC') && PROD_FILE_NAME.endsWith('.groovy') && trimmedLine.startsWith('public ')) {
@@ -485,6 +524,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         if (debug('METHOD SETUP') && methodName.equalsIgnoreCase('setUp') && 'setUp' != methodName) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_TEST_METHOD_SETUP)
         } else if (debug('METHOD FIRST VERB') && !isTest && trimmedLine.contains("(") && !content.contains('@Configuration') &&
+                !methodName.matches('^(from|to|pre|post|on|and)[A-Z]\\w+$') &&
                 !lines[0].matches('^.*\\b(models?|beans?|pojos?|constants?)\\b.*$') && !getDictionary().isVerbBeginning(methodName)) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_METHOD_VERB_STARTS)
         }
@@ -594,11 +634,11 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
 // TODO: disable the specified check items
 // TODO: identical expression cannot be extracted if it's inside java stream
 // TODO: add issue title for details of same issue category
-// TODO: auto expand folded lines
-// method should start with a verb
-// compare with empty string
-// compare with null, Groovy
-// snake names for field, method and variable
+// Add method naming check, should start with a verb
+// Add comparison check with empty string
+// Add comparison check with null, Groovy
+// Add check for missing parameter documentation
+// Add snake case naming check for fields, methods and variables
 // TODO: check xdist comment or documentation
 // TODO: complex if expression is better to be assigned a well-named variable to improve the readability
 // TODO: LOGGER should be private
@@ -611,4 +651,4 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
 // TODO: Simple check unused parameters
 // TODO: Documentation doesn't contain parameters
 // TODO: Calculate file count
-// TODO: Report errors when scanning is done
+// TODO: Report files with errors when scanning is done

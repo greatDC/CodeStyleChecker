@@ -13,6 +13,7 @@ import com.intellij.openapi.components.Storage;
 public class CodeStyleCheckConfigurationState {
 
     private boolean experimentalEnabled = true;
+    private boolean testPrefixInTestForced = false;
 
     /**
      *
@@ -28,5 +29,21 @@ public class CodeStyleCheckConfigurationState {
      */
     public void setExperimentalEnabled(boolean experimentalEnabled) {
         this.experimentalEnabled = experimentalEnabled;
+    }
+
+    /**
+     * Indicate if the method name in test class has to start with `test` prefix.
+     * @return
+     */
+    public boolean isTestPrefixInTestForced() {
+        return testPrefixInTestForced;
+    }
+
+    /**
+     * Indicate if the method name in test class has to start with `test` prefix.
+     * @param testPrefixInTestForced
+     */
+    public void setTestPrefixInTestForced(boolean testPrefixInTestForced) {
+        this.testPrefixInTestForced = testPrefixInTestForced;
     }
 }

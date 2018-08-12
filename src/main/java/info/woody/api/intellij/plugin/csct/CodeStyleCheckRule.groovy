@@ -1,5 +1,6 @@
 package info.woody.api.intellij.plugin.csct
 
+import com.intellij.openapi.components.ServiceManager
 import groovy.io.FileType
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckDetailData
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckDetailFileData
@@ -8,11 +9,12 @@ import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckLineError
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckReportData
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckSummaryData
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckSummaryFileData
-
-import java.util.function.BiFunction
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import static info.woody.api.intellij.plugin.csct.util.Const.LINE_SEPARATOR
 import static info.woody.api.intellij.plugin.csct.util.Const.REPORT_LINE_SEPARATOR
+import java.util.function.BiFunction
 import java.util.regex.Pattern
 /**
  * <p>http://www.oracle.com/technetwork/java/codeconvtoc-136057.html</p>
@@ -21,6 +23,9 @@ import java.util.regex.Pattern
  * @since 01/06/2018
  */
 abstract class CodeStyleCheckRule {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CodeStyleCheckRule)
+
     public BiFunction<String, Double, Boolean> PROGRESS
     public String MY_SOURCE_DIR = "" // source code folder
     public List<String> FILES_TO_SKIP = []
@@ -47,6 +52,8 @@ abstract class CodeStyleCheckRule {
     protected List AUTHORS
     protected StringBuilder outputBuilder = new StringBuilder(9999)
     protected boolean ENABLE_CONSOLE_REPORT = false
+    protected CodeStyleCheckConfigurationState SETTINGS
+    protected Map<String, String> CACHED_FILE_CONTENT
 
     /**
      * Check the code smells.
@@ -54,6 +61,7 @@ abstract class CodeStyleCheckRule {
      * @return Issues report.
      */
     CodeStyleCheckReportData doCheck() {
+        SETTINGS = ServiceManager.getService(CodeStyleCheckConfigurationService.class).getState()
         File dir = new File(MY_SOURCE_DIR?:"")
         if (!dir.exists() || dir.isFile()) {
             throw new CodeStyleCheckException("`SourceDir` in configuration file has to be a valid file path: " + dir.getAbsolutePath())
@@ -76,11 +84,21 @@ abstract class CodeStyleCheckRule {
                 }
             }
         }
+
+        CACHED_FILE_CONTENT = [:]
+        TARGET_FILES.eachWithIndex { File file, int index ->
+            CACHED_FILE_CONTENT.put(file, file.getText('UTF-8'))
+        }
+
         int targetFileCount = TARGET_FILES.size()
         TARGET_FILES.eachWithIndex { File file, int index ->
             boolean isCanceled = this.PROGRESS.apply(file.name, ((index + 1) / targetFileCount).toDouble())
             if (!isCanceled) {
-                findPotentialIssues(file, index + 1)
+                try {
+                    findPotentialIssues(file, index + 1)
+                } catch (e) {
+                    LOGGER.error("Failed to check `${file.getCanonicalPath()}` due to some exceptions", e)
+                }
             }
         }
         if (ENABLE_CONSOLE_REPORT) {

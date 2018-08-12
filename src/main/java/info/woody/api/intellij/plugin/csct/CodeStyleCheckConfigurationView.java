@@ -15,15 +15,20 @@ public class CodeStyleCheckConfigurationView {
     private boolean modified;
     private JPanel settingPanel;
     private JBCheckBox checkBoxExperimental;
+    private JBCheckBox checkBoxTestMethodPrefixedByTest;
 
     /**
      * Constructor.
      */
     public CodeStyleCheckConfigurationView() {
+        CodeStyleCheckConfigurationState state = ServiceManager.getService(CodeStyleCheckConfigurationService.class).getState();
         checkBoxExperimental.addChangeListener(e -> {
             this.modified = true;
-            ServiceManager.getService(CodeStyleCheckConfigurationService.class).getState()
-                    .setExperimentalEnabled(((JBCheckBox)e.getSource()).isSelected());
+            state.setExperimentalEnabled(((JBCheckBox)e.getSource()).isSelected());
+        });
+        checkBoxTestMethodPrefixedByTest.addChangeListener(e -> {
+            this.modified = true;
+            state.setTestPrefixInTestForced(((JBCheckBox)e.getSource()).isSelected());
         });
     }
 
@@ -41,5 +46,8 @@ public class CodeStyleCheckConfigurationView {
 
     public JBCheckBox getCheckBoxExperimental() {
         return checkBoxExperimental;
+    }
+    public JBCheckBox getCheckBoxTestMethodPrefixedByTest() {
+        return checkBoxTestMethodPrefixedByTest;
     }
 }
