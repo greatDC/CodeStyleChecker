@@ -31,3 +31,5 @@ https://plugins.jetbrains.com/plugin/10798-code-style-check-tool
 http://www.jetbrains.org/intellij/sdk/docs/welcome.html
 
 https://google.github.io/styleguide/javaguide.html
+
+http://www.iconarchive.com/show/fugue-icons-by-yusuke-kamiyamane/eye-exclamation-icon.html

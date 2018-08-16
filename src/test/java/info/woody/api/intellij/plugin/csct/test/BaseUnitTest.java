@@ -1,7 +1,7 @@
 package info.woody.api.intellij.plugin.csct.test;
 
-import info.woody.api.intellij.plugin.csct.CodeStyleCheckRule;
-import info.woody.api.intellij.plugin.csct.CodeStyleCheckRuleImpl;
+import info.woody.api.intellij.plugin.csct.core.CodeStyleCheckRule;
+import info.woody.api.intellij.plugin.csct.core.CodeStyleCheckRuleImpl;
 import info.woody.api.intellij.plugin.csct.bean.*;
 import org.junit.Assert;
 import org.junit.Before;

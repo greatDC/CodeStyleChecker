@@ -3,6 +3,7 @@ package info.woody.api.intellij.plugin.csct.test;
 import info.woody.api.intellij.plugin.csct.CodeStyleCheckException;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckGlobalError;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckReportData;
+import info.woody.api.intellij.plugin.csct.core.CodeStyleCheckRuleImpl;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -10,11 +11,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Test class for {@link info.woody.api.intellij.plugin.csct.CodeStyleCheckRuleImpl} to test initialisation.
+ * Test class for {@link CodeStyleCheckRuleImpl} to test initialisation.
  *
  * @author Woody
  */
-public class CodeStyleCheckToolTest extends BaseUnitTest {
+public class CodeStyleCheckScanActionTest extends BaseUnitTest {
 
     @Test
     public void success() {

@@ -17,11 +17,11 @@ import javax.swing.event.HyperlinkListener;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static info.woody.api.intellij.plugin.csct.CodeStyleCheckTool.DETAILS_TEXT_PANE;
-import static info.woody.api.intellij.plugin.csct.CodeStyleCheckTool.REPORT_INFO;
-import static info.woody.api.intellij.plugin.csct.CodeStyleCheckTool.SUMMARY_AUTHOR_TEXT_PANE;
-import static info.woody.api.intellij.plugin.csct.CodeStyleCheckTool.SUMMARY_FILE_TEXT_PANE;
-import static info.woody.api.intellij.plugin.csct.CodeStyleCheckTool.SUMMARY_OVERVIEW_TEXT_PANE;
+import static info.woody.api.intellij.plugin.csct.CodeStyleCheckScanAction.DETAILS_TEXT_PANE;
+import static info.woody.api.intellij.plugin.csct.CodeStyleCheckScanAction.REPORT_INFO;
+import static info.woody.api.intellij.plugin.csct.CodeStyleCheckScanAction.SUMMARY_AUTHOR_TEXT_PANE;
+import static info.woody.api.intellij.plugin.csct.CodeStyleCheckScanAction.SUMMARY_FILE_TEXT_PANE;
+import static info.woody.api.intellij.plugin.csct.CodeStyleCheckScanAction.SUMMARY_OVERVIEW_TEXT_PANE;
 import static info.woody.api.intellij.plugin.csct.util.Const.HTML_TAG_BR;
 import static info.woody.api.intellij.plugin.csct.util.Const.SIGN_HASH;
 import static info.woody.api.intellij.plugin.csct.util.EditorUtils.openFileInEditor;

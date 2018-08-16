@@ -1,4 +1,4 @@
-package info.woody.api.intellij.plugin.csct
+package info.woody.api.intellij.plugin.csct.core
 
 import groovy.util.slurpersupport.GPathResult
 import org.slf4j.Logger

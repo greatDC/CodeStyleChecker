@@ -1,7 +1,10 @@
-package info.woody.api.intellij.plugin.csct
+package info.woody.api.intellij.plugin.csct.core
 
 import com.intellij.openapi.components.ServiceManager
 import groovy.io.FileType
+import info.woody.api.intellij.plugin.csct.CodeStyleCheckConfigurationService
+import info.woody.api.intellij.plugin.csct.CodeStyleCheckConfigurationState
+import info.woody.api.intellij.plugin.csct.CodeStyleCheckException
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckDetailData
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckDetailFileData
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckGlobalError

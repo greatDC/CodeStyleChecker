@@ -7,6 +7,9 @@ import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.JComponent;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.joining;
 
 /**
  * Plugin configuration.
@@ -42,7 +45,9 @@ public class CodeStyleCheckConfigurable implements Configurable {
     @Override
     public void reset() {
         CodeStyleCheckConfigurationService configurationService = ServiceManager.getService(CodeStyleCheckConfigurationService.class);
-        configurationView.getCheckBoxExperimental().setSelected(configurationService.getState().isExperimentalEnabled());
-        configurationView.getCheckBoxTestMethodPrefixedByTest().setSelected(configurationService.getState().isTestPrefixInTestForced());
+        CodeStyleCheckConfigurationState state = configurationService.getState();
+        configurationView.getCheckBoxExperimental().setSelected(state.isExperimentalEnabled());
+        configurationView.getCheckBoxTestMethodPrefixedByTest().setSelected(state.isTestPrefixInTestForced());
+        configurationView.getTextFieldBadNamingSkipList().setText(state.getBadNamingSkipList().stream().collect(joining(", ")));
     }
 }

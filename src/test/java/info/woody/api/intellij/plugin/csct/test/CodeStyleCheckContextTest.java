@@ -1,6 +1,6 @@
 package info.woody.api.intellij.plugin.csct.test;
 
-import info.woody.api.intellij.plugin.csct.CodeStyleCheckContext;
+import info.woody.api.intellij.plugin.csct.core.CodeStyleCheckContext;
 import org.junit.Assert;
 import org.junit.Test;
 

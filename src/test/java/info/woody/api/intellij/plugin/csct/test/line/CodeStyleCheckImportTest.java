@@ -1,6 +1,7 @@
 package info.woody.api.intellij.plugin.csct.test.line;
 
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckIssues;
+import info.woody.api.intellij.plugin.csct.core.CodeStyleCheckRuleImpl;
 import info.woody.api.intellij.plugin.csct.test.BaseUnitTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -8,7 +9,7 @@ import org.junit.Test;
 import java.util.List;
 
 /**
- * Test class for {@link info.woody.api.intellij.plugin.csct.CodeStyleCheckRuleImpl} to test import patterns.
+ * Test class for {@link CodeStyleCheckRuleImpl} to test import patterns.
  *
  * @author Woody
  */

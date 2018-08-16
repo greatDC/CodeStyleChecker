@@ -23,6 +23,9 @@ import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckLineError;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckReportData;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckReportSummary;
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckSummaryData;
+import info.woody.api.intellij.plugin.csct.core.CodeStyleCheckContext;
+import info.woody.api.intellij.plugin.csct.core.CodeStyleCheckRule;
+import info.woody.api.intellij.plugin.csct.core.CodeStyleCheckRuleImpl;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,9 +63,9 @@ import static java.util.stream.Collectors.joining;
  *
  * @author Woody
  */
-public class CodeStyleCheckTool extends AnAction {
+public class CodeStyleCheckScanAction extends AnAction {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CodeStyleCheckTool.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CodeStyleCheckScanAction.class);
 
     public static final String SUMMARY_OVERVIEW_TEXT_PANE = "summaryOverviewTextPane";
     public static final String SUMMARY_FILE_TEXT_PANE = "summaryFileTextPane";
@@ -135,6 +138,10 @@ public class CodeStyleCheckTool extends AnAction {
         codeStyleCheck.FILENAME_PATTERN_TO_SKIP = context.FILENAME_PATTERN_TO_SKIP();
         codeStyleCheck.FILES_TO_SKIP = context.FILES_TO_SKIP();
         codeStyleCheck.GIT_FILES_TO_MERGE = context.GIT_FILES_TO_MERGE();
+        String sourcePresentation = e.getInputEvent().getSource().toString();
+        if (sourcePresentation.startsWith("QUICK:")) {
+            codeStyleCheck.GIT_FILES_TO_MERGE = sourcePresentation.replaceAll("QUICK:", "");
+        }
         CodeStyleCheckReportData report = codeStyleCheck.doCheck();
         ToolWindow codeStyleCheckResultView = ToolWindowManager.getInstance(e.getProject()).getToolWindow("Code scanning results");
         ContentManager contentManager = codeStyleCheckResultView.getContentManager();

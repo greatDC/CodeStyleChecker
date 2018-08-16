@@ -43,10 +43,17 @@
     </extensions>
 
     <actions>
-        <!-- Add your actions here -->
-        <action id="CodeStyleCheckTool" text="Code Style Check" description="Code Style Check"
-                class="info.woody.api.intellij.plugin.csct.CodeStyleCheckTool">
+        <action id="CodeStyleCheckScanAction" text="Code Style Check" description="Code Style Check"
+                class="info.woody.api.intellij.plugin.csct.CodeStyleCheckScanAction" icon="/action.png">
             <add-to-group group-id="AnalyzeMenu" anchor="first"/>
+        </action>
+        <!--<action id="CodeStyleCheckSequenceAction" text="Sequence Diagram" description="Show Sequence Diagram"-->
+                <!--class="info.woody.api.intellij.plugin.csct.CodeStyleCheckSequenceAction">-->
+            <!--<add-to-group group-id="EditorPopupMenu" anchor="last"/>-->
+        <!--</action>-->
+        <action id="CodeStyleCheckQuickDiagnoseAction" text="Quick Code Style Check" description="Quick Code Style Check"
+                class="info.woody.api.intellij.plugin.csct.CodeStyleCheckQuickDiagnoseAction" icon="/action.png">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
     </actions>
 </idea-plugin>

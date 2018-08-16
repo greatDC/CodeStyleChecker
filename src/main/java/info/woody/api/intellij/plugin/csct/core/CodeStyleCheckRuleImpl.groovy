@@ -1,4 +1,4 @@
-package info.woody.api.intellij.plugin.csct
+package info.woody.api.intellij.plugin.csct.core
 
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckIssues
 import info.woody.api.intellij.plugin.csct.util.Const
@@ -269,7 +269,8 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
             if (variableName.contains('_')) {
                 printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_SNAKE_CASE_NAMING)
             }
-            if (debug('PROPER NOUN NAMING') && variableName.matches(Const.REGEX_IMPROPER_ACRONYM_NAMING)) {
+            if (debug('PROPER NOUN NAMING') && variableName.matches(Const.REGEX_IMPROPER_ACRONYM_NAMING) &&
+                    !SETTINGS.getBadNamingSkipList().any { variableName.toLowerCase().contains(it.toLowerCase()) }) {
                 printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_IMPROPER_ACRONYM_NAMING)
             }
             if (debug('BAD NAMING') && variableName.matches('^(\\w+(Str(ing)?|Redis)([A-Z]\\w+)?|(str(ing)?|redis)[A-Z]\\w+)$')) {
@@ -305,7 +306,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
             nextTrimmedLine = lines[nextLineIndex].trim()
         }
         String lineWithoutHtml = trimmedLine.replaceAll("<[^>]+>", "")
-        if (trimmedLine.endsWith('*/') || trimmedLine.contains('@author')) {
+        if (trimmedLine.endsWith('*/') || trimmedLine.contains('@author') || trimmedLine.contains('@see')) {
             return
         } else if (trimmedLine == "/**") {
             if (nextTrimmedLine == '*' || nextTrimmedLine == '*/' || nextTrimmedLine.startsWith('* @')) {
@@ -369,7 +370,8 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         if ((line.contains('class ') || line.contains('interface ')) && getDictionary().isUniqueVerbBeginning(typeName)) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_CLASS_VERB_STARTS)
         }
-        if (debug('PROPER NOUN NAMING') && typeName.matches(Const.REGEX_IMPROPER_ACRONYM_NAMING)) {
+        if (debug('PROPER NOUN NAMING') && typeName.matches(Const.REGEX_IMPROPER_ACRONYM_NAMING) &&
+                !SETTINGS.getBadNamingSkipList().any { typeName.toLowerCase().contains(it.toLowerCase()) }) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_IMPROPER_ACRONYM_NAMING)
         }
     }
@@ -438,7 +440,8 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         } else if (debug('FILED CONTAINING UNDERSCORE') && !fieldName.matches('^[A-Z_]+$') && fieldName.contains('_')) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_SNAKE_CASE_NAMING)
         }
-        if (debug('PROPER NOUN NAMING') && fieldName.matches(Const.REGEX_IMPROPER_ACRONYM_NAMING)) {
+        if (debug('PROPER NOUN NAMING') && fieldName.matches(Const.REGEX_IMPROPER_ACRONYM_NAMING) &&
+                !SETTINGS.getBadNamingSkipList().any { fieldName.toLowerCase().contains(it.toLowerCase()) }) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_IMPROPER_ACRONYM_NAMING)
         }
         /*
@@ -528,7 +531,8 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                 !lines[0].matches('^.*\\b(models?|beans?|pojos?|constants?)\\b.*$') && !getDictionary().isVerbBeginning(methodName)) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_METHOD_VERB_STARTS)
         }
-        if (debug('PROPER NOUN NAMING') && methodName.matches(Const.REGEX_IMPROPER_ACRONYM_NAMING)) {
+        if (debug('PROPER NOUN NAMING') && methodName.matches(Const.REGEX_IMPROPER_ACRONYM_NAMING) &&
+                !SETTINGS.getBadNamingSkipList().any { methodName.toLowerCase().contains(it.toLowerCase()) }) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_IMPROPER_ACRONYM_NAMING)
         }
     }
@@ -654,3 +658,8 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
 // TODO: Report files with errors when scanning is done
 // TODO: All validators should be a subtype of interface Validator.
 // TODO: Validator shouldn't has non-inherit public methods
+// TODO: A Great Adventure - Context Aware - Type / Method / Statement(if & else, for, while, do, switch, try & catch)
+// @see bug fixing
+// check it now
+// configurable bad naming
+// Add action icons

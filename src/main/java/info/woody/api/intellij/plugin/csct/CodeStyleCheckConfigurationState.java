@@ -3,6 +3,10 @@ package info.woody.api.intellij.plugin.csct;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 /**
  * Plugin configuration state.
  *
@@ -14,9 +18,9 @@ public class CodeStyleCheckConfigurationState {
 
     private boolean experimentalEnabled = true;
     private boolean testPrefixInTestForced = false;
+    private List<String> badNamingSkipList = Stream.of("SuperPNR").collect(Collectors.toList());
 
     /**
-     *
      * @return
      */
     public boolean isExperimentalEnabled() {
@@ -24,7 +28,6 @@ public class CodeStyleCheckConfigurationState {
     }
 
     /**
-     *
      * @param experimentalEnabled
      */
     public void setExperimentalEnabled(boolean experimentalEnabled) {
@@ -33,6 +36,7 @@ public class CodeStyleCheckConfigurationState {
 
     /**
      * Indicate if the method name in test class has to start with `test` prefix.
+     *
      * @return
      */
     public boolean isTestPrefixInTestForced() {
@@ -41,9 +45,19 @@ public class CodeStyleCheckConfigurationState {
 
     /**
      * Indicate if the method name in test class has to start with `test` prefix.
+     *
      * @param testPrefixInTestForced
      */
     public void setTestPrefixInTestForced(boolean testPrefixInTestForced) {
         this.testPrefixInTestForced = testPrefixInTestForced;
     }
+
+    public List<String> getBadNamingSkipList() {
+        return badNamingSkipList;
+    }
+
+    public void setBadNamingSkipList(List<String> badNamingSkipList) {
+        this.badNamingSkipList = badNamingSkipList;
+    }
+
 }
