@@ -18,7 +18,7 @@ public class CodeStyleCheckConfigurationState {
 
     private boolean experimentalEnabled = true;
     private boolean testPrefixInTestForced = false;
-    private List<String> badNamingSkipList = Stream.of("SuperPNR").collect(Collectors.toList());
+    private List<String> badNamingSkipList = Stream.of("SuperPNR", "GPath", "SPNR", "PNR").collect(Collectors.toList());
 
     /**
      * @return

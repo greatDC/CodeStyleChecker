@@ -44,6 +44,8 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         for (String line : lines) {
             if (line.length() > MAX_LINE_LENGTH_CAN_BE_CHECKED) {
                 continue
+            } else if (line.matches('^[^.(]*\\b(class|interface|enum)\\b.*$')) {
+                break
             }
             boolean isDocPattern = line.trim().startsWith("*")
             if (isDocPattern && line.matches('(?i)^.*created? by ((\\w+)([.]\\w+)*).*$')) { // extract author from comment
@@ -103,7 +105,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                     /*secureLine.matches('^(\t| {3,5})((public|protected|private)( ))?[\\w$]+(<[^()]+>)? [\\w$]+[(][^+-=)]*[)]\\s*[{]$')*/) {
                 checkMethod(content, lines, totalLineCount, index, line, trimmedLine, isTest)
             } else if (trimmedLineLength) {
-                checkOthers(lines, totalLineCount, index, line, trimmedLine, trimmedSecureLine, lineLength, isTest)
+                checkOthers(content, lines, totalLineCount, index, line, trimmedLine, trimmedSecureLine, lineLength, isTest)
             }
         }
 
@@ -128,20 +130,23 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         }
     }
 
-    private void checkOthers(String[] lines, int totalLineCount, int index,
+    private void checkOthers(String content, String[] lines, int totalLineCount, int index,
                              String line, String trimmedLine, String trimmedSecureLine, int lineLength, boolean isTest) {
         if (debug('EXCEEDS MAX CHARS') && !PROD_FILE_NAME.contains("Controller.java") && lineLength > 140) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_EXCEED_140_CHARS)
         }
-        if (debug('ENUM COMPARISON') && trimmedSecureLine.matches('^.+\\b\\w+Enum[.][A-Z_]+[.]equals.+$')) {
+        if (debug('ENUM COMPARISON') && (trimmedSecureLine.matches('^.+\\b\\w+Enum[.][A-Z_]+[.]equals.+$') ||
+                (trimmedSecureLine.matches('^.*(\\w+)[.][A-Z_0-9]+[.]equals.*$') &&
+                        content.contains('api.model.' + trimmedSecureLine.replaceFirst('^.*\\b(\\w+)[.][A-Z_0-9]+[.]equals.*$', '$1'))))) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_ENUM_COMPARE)
         }
         if (debug('TEST ASSERT') && isTest && PROD_FILE_NAME.endsWith('java') && trimmedSecureLine.split('\\W').contains('assert')) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_ASSERT)
         }
-        if (debug('LITERAL') && !isTest && !trimmedLine.startsWith('@')
-                && !(PROD_FILE_NAME.contains('RequestService') // exclude the pattern like 'XxxRequestService'
-                && PROD_FILE_NAME.endsWith('.groovy')) // request service written by Groovy
+        if (debug('LITERAL') && !isTest && !trimmedLine.startsWith('@') && !PROD_FILE_NAME.contains('MapperService.') &&
+                !PROD_FILE_NAME.contains('Mapper.') && !trimmedSecureLine.matches('^.*\\b0[.]0\\b.*$') &&
+                !(PROD_FILE_NAME.contains('RequestService') && // exclude the pattern like 'XxxRequestService'
+                PROD_FILE_NAME.endsWith('.groovy')) // request service written by Groovy
         ) {
             if (trimmedLine.matches('(?i)^.+?"([a-z0-9._]+|\\W)".*$') // string pattern only
                     || trimmedSecureLine.replaceAll('\\[\\d+\\]', '') // remove index pattern for list element
@@ -216,8 +221,8 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
             String contextLines = contextBuilder.toString() // pattern: var.call()
             if (contextLines.matches('^.*[^.@](\\b[a-z]\\w+[.]\\w+[(][^()]*[)]).*\\1.*$')) {
                 String duplicateExpression = contextLines.replaceAll('^.*[^.@](\\b[a-z]\\w+[.]\\w+[(][^()]*[)]).*\\1.*$', '$1')
-                if (line.contains(duplicateExpression) && !line.toLowerCase().contains("random")
-                        && !line.toLowerCase().contains("stream") && !line.toLowerCase().contains("append")) {
+                if (line.contains(duplicateExpression) && !duplicateExpression.toLowerCase().contains("random") && !line.contains("->")
+                        && !duplicateExpression.toLowerCase().matches('^.*[.](set|put|stream|append|add).*')) {
                     printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_IDENTICAL_EXPRESSIONS, duplicateExpression)
                 }
             }
@@ -254,10 +259,14 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                 (trimmedSecureLine.contains('.length') || trimmedSecureLine.contains('.size()'))) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_REDUCE_MULTIPLE_CALCULATION)
         } else if (debug('RETURN STATEMENT') && trimmedLine.startsWith('return') && index > 2 &&
-                totalLineCount - LINE_NUMBER > 2 && lines[index - 1].trim().startsWith('if ') &&
-                (lines[index - 1] + trimmedLine + lines[index + 2].trim()).length() < 100 &&
-                lines[index + 2].trim().startsWith('return')) {
-            printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_OPTIMIZE_RETURN)
+                totalLineCount - LINE_NUMBER > 2 && lines[index - 1].trim().startsWith('if ')) {
+            String booleanStatement = '(?i)^return.{1,10}(true|false);?$'
+            if (trimmedLine.matches(booleanStatement) && lines[index + 2].trim().matches(booleanStatement)) {
+                printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_OPTIMIZE_BOOLEAN_RETURN)
+            } else if ((lines[index - 1] + trimmedLine + lines[index + 2].trim()).length() < 100 &&
+                    lines[index + 2].trim().startsWith('return')) {
+                printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_OPTIMIZE_RETURN)
+            }
         } else if (debug('LOCAL VARIABLE DEFINITION') && (trimmedSecureLineWithoutGenericType.matches('^(([A-Z][a-z]+)+|def|int|boolean) \\w+;?$') ||
                 trimmedSecureLineWithoutGenericType.matches('^(\\w+)\\s+(\\w+) ?=.*$'))) {
             String variableName = trimmedSecureLine
@@ -327,7 +336,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
             }
             docContent = docContent.trim()
             if (docContent && !docContent.matches('^[0-9A-Z{].*[.:,;!?]$')) {
-                printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_DOCUMENTATION_FORMAT)
+                printWarning(line, LINE_NUMBER + 1, CodeStyleCheckIssues.LINE_DOCUMENTATION_FORMAT)
             }
         } else if (trimmedLine.contains('* @') &&
                 !trimmedLine.replaceFirst('^[*] (@(param|throws) \\w+|@return)?', '').trim()
@@ -341,7 +350,8 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                 printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_DOCUMENTATION_REDUNDANT_EMPTY_LINES)
             }
         }
-        if (lineWithoutHtml.replaceAll('[{][^}]+[}]', '').matches('^[*] (@\\w+\\s+\\w+\\s+)?[A-Z][a-z].*[a-z][A-Z].*$') &&
+        if (!SETTINGS.getBadNamingSkipList().any{ trimmedLine.toLowerCase().contains(it.toLowerCase()) } &&
+                lineWithoutHtml.replaceAll('[{][^}]+[}]', '').matches('^[*] (@\\w+\\s+\\w+\\s+)?[A-Z][a-z].*[a-z][A-Z].*$') &&
                 !trimmedLine.matches('(?i)^.*created? by.*\\d{1,2}/\\d{1,2}/\\d{4}.*$')) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_CODE_IN_DOCUMENTATION)
         }
@@ -373,6 +383,10 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         if (debug('PROPER NOUN NAMING') && typeName.matches(Const.REGEX_IMPROPER_ACRONYM_NAMING) &&
                 !SETTINGS.getBadNamingSkipList().any { typeName.toLowerCase().contains(it.toLowerCase()) }) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_IMPROPER_ACRONYM_NAMING)
+        }
+        if (trimmedLine.contains('class ') && typeName.endsWith('Validator') &&
+                (trimmedLine.count('Validator') < 2 && !trimmedLine.contains('ValidationErrorCollector'))) {
+            printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_VALIDATOR_CONVENTION)
         }
     }
 
@@ -636,18 +650,10 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
 //
 // NEW FEATURES
 // TODO: disable the specified check items
-// TODO: identical expression cannot be extracted if it's inside java stream
 // TODO: add issue title for details of same issue category
-// Add method naming check, should start with a verb
-// Add comparison check with empty string
-// Add comparison check with null, Groovy
-// Add check for missing parameter documentation
-// Add snake case naming check for fields, methods and variables
 // TODO: check xdist comment or documentation
 // TODO: complex if expression is better to be assigned a well-named variable to improve the readability
 // TODO: LOGGER should be private
-// Optimise method/variable/class detection
-// Optimise the extraction of author; remove the @since check
 // TODO: Catch statement should be checked against the current line, but not the previous line.
 // TODO(OPTIONAL): Rationale: Each instance variable gets initialized twice, to the same value.
 // TODO: Asynchronously create reports to improve the display performance
@@ -656,10 +662,23 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
 // TODO: Documentation doesn't contain parameters
 // TODO: Calculate file count
 // TODO: Report files with errors when scanning is done
-// TODO: All validators should be a subtype of interface Validator.
 // TODO: Validator shouldn't has non-inherit public methods
 // TODO: A Great Adventure - Context Aware - Type / Method / Statement(if & else, for, while, do, switch, try & catch)
-// @see bug fixing
+// 2018.08.BB
 // check it now
+// @see bug fixing
 // configurable bad naming
 // Add action icons
+// identical expression cannot be extracted if it's inside java stream
+// All validators should be a subtype of interface Validator.
+// TODO: 0.0
+// enhance ENUM COMPARISON
+// TODO: add quick version check
+// 2018.08.AA
+// Add method naming check, should start with a verb
+// Add comparison check with empty string
+// Add comparison check with null, Groovy
+// Add check for missing parameter documentation
+// Add snake case naming check for fields, methods and variables
+// Optimise method/variable/class detection
+// Optimise the extraction of author; remove the @since check

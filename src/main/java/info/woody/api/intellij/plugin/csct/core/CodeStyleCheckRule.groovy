@@ -1,5 +1,8 @@
 package info.woody.api.intellij.plugin.csct.core
 
+import static info.woody.api.intellij.plugin.csct.util.Const.LINE_SEPARATOR
+import static info.woody.api.intellij.plugin.csct.util.Const.REPORT_LINE_SEPARATOR
+
 import com.intellij.openapi.components.ServiceManager
 import groovy.io.FileType
 import info.woody.api.intellij.plugin.csct.CodeStyleCheckConfigurationService
@@ -8,6 +11,7 @@ import info.woody.api.intellij.plugin.csct.CodeStyleCheckException
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckDetailData
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckDetailFileData
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckGlobalError
+import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckIssues
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckLineError
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckReportData
 import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckSummaryData
@@ -15,8 +19,6 @@ import info.woody.api.intellij.plugin.csct.bean.CodeStyleCheckSummaryFileData
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-import static info.woody.api.intellij.plugin.csct.util.Const.LINE_SEPARATOR
-import static info.woody.api.intellij.plugin.csct.util.Const.REPORT_LINE_SEPARATOR
 import java.util.function.BiFunction
 import java.util.regex.Pattern
 /**
@@ -36,6 +38,7 @@ abstract class CodeStyleCheckRule {
     // below file list could be created by git command 'git diff --name-only branch1 branch2'
     // Sample: "git diff --name-only HEAD origin/SPRINT_BOEING_727 | grep -e java$ -e groovy$"
     public String GIT_FILES_TO_MERGE = ''
+    public CodeStyleCheckConfigurationState SETTINGS
     /**
      * Key is file absolute path and value is file detail of {@link Map} type.
      */
@@ -55,7 +58,6 @@ abstract class CodeStyleCheckRule {
     protected List AUTHORS
     protected StringBuilder outputBuilder = new StringBuilder(9999)
     protected boolean ENABLE_CONSOLE_REPORT = false
-    protected CodeStyleCheckConfigurationState SETTINGS
     protected Map<String, String> CACHED_FILE_CONTENT
 
     /**
@@ -64,7 +66,9 @@ abstract class CodeStyleCheckRule {
      * @return Issues report.
      */
     CodeStyleCheckReportData doCheck() {
-        SETTINGS = ServiceManager.getService(CodeStyleCheckConfigurationService.class).getState()
+        if (!SETTINGS) {
+            SETTINGS = ServiceManager.getService(CodeStyleCheckConfigurationService.class).getState()
+        }
         File dir = new File(MY_SOURCE_DIR?:"")
         if (!dir.exists() || dir.isFile()) {
             throw new CodeStyleCheckException("`SourceDir` in configuration file has to be a valid file path: " + dir.getAbsolutePath())
@@ -161,6 +165,10 @@ abstract class CodeStyleCheckRule {
      * @param args The arguments for error message template.
      */
     protected void printWarning(String line, int lineNumber, String error, String... args) {
+        if (CodeStyleCheckIssues.LINE_IMPROPER_ACRONYM_NAMING == error && SETTINGS.getBadNamingSkipList().any { line.contains(it) }) {
+            return
+        }
+
         FILE_ISSUE_COUNT++
         if (ENABLE_CONSOLE_REPORT) {
             __println String.valueOf(lineNumber).padRight(5).concat(line).concat("\t&lt;===\t${error}")
