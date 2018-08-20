@@ -2,7 +2,6 @@ package info.woody.api.intellij.plugin.csct;
 
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.ui.components.JBCheckBox;
-import com.intellij.ui.components.JBTextField;
 
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -10,7 +9,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 

@@ -17,7 +17,7 @@ public class CodeStyleCheckMethodTest extends BaseUnitTest {
 
     @Test
     public void groovyMethod() {
-        rule.GIT_FILES_TO_MERGE = SAMPLE_PROJECT_SRC + "/src/main/groovy/info/woody/api/intellij/plugin/csct/sample/groovy/method/SampleGroovyMethodIssue.groovy";
+        rule.GIT_FILES_TO_MERGE = SAMPLE_PROJECT_FOLDER + "/src/main/groovy/info/woody/api/intellij/plugin/csct/sample/groovy/method/SampleGroovyMethodIssue.groovy";
         List<String> errors = getLineErrors();
 
         Assert.assertEquals(2, errors.stream().filter(error -> error.contains(CodeStyleCheckIssues.LINE_UNUSED_METHOD)).count());
@@ -26,7 +26,7 @@ public class CodeStyleCheckMethodTest extends BaseUnitTest {
 
     @Test
     public void javaMethod() {
-        rule.GIT_FILES_TO_MERGE = SAMPLE_PROJECT_SRC + "/src/test/java/info/woody/api/intellij/plugin/csct/sample/java/field/SampleJavaMethodIssueTest.java";
+        rule.GIT_FILES_TO_MERGE = SAMPLE_PROJECT_FOLDER + "/src/test/java/info/woody/api/intellij/plugin/csct/sample/java/field/SampleJavaMethodIssueTest.java";
         List<String> errors = getLineErrors();
 
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_TEST_METHOD_PREFIX_WRONG));

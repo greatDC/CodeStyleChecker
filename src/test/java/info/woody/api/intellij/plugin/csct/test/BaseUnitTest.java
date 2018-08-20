@@ -20,15 +20,15 @@ import java.util.stream.Collectors;
  */
 public class BaseUnitTest {
 
-    public static final String SAMPLE_PROJECT_SRC;
+    public static final String SAMPLE_PROJECT_FOLDER;
     static {
         String path = null;
         try {
-            path = Paths.get(".").toFile().getCanonicalPath().concat("/");
+            path = Paths.get(".").toFile().getCanonicalPath().concat("/../Examples/");
         } catch (IOException e) {
             Assert.fail("info.woody.api.intellij.plugin.csct.test.BaseUnitTest.SAMPLE_PROJECT_SRC is not set!");
         }
-        SAMPLE_PROJECT_SRC = path;
+        SAMPLE_PROJECT_FOLDER = path;
     }
 
     protected CodeStyleCheckRule rule = new CodeStyleCheckRuleImpl();
@@ -39,10 +39,12 @@ public class BaseUnitTest {
     @Before
     public void setUpBase() {
         rule.PROGRESS = (a, b) -> false;
-        rule.MY_SOURCE_DIR = SAMPLE_PROJECT_SRC;
+        rule.MY_SOURCE_DIR = SAMPLE_PROJECT_FOLDER;
         rule.FILES_TO_SKIP = new ArrayList<>();
         rule.FILENAME_PATTERN_TO_SKIP = "^.*(Controller).*$";
-        rule.SETTINGS = new CodeStyleCheckConfigurationState();
+        CodeStyleCheckConfigurationState settings = new CodeStyleCheckConfigurationState();
+        settings.setTestPrefixInTestForced(true);
+        rule.SETTINGS = settings;
     }
 
     /**

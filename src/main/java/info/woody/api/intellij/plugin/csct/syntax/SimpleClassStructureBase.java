@@ -9,6 +9,9 @@ abstract class SimpleClassStructureBase {
     protected SimpleClassStructureType type;
     protected List<SimpleClassStructureReference> referenceList;
 
+    /**
+     * Constructor.
+     */
     public SimpleClassStructureBase(SimpleClassStructureType type) {
         this.type = type;
     }

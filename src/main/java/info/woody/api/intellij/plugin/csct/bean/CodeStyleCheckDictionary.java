@@ -46,6 +46,11 @@ public class CodeStyleCheckDictionary {
     private CodeStyleCheckDictionary() {
     }
 
+    /**
+     * Get the dictionary.
+     *
+     * @return The dictionary.
+     */
     public static CodeStyleCheckDictionary getDictionary() {
         return CodeStyleCheckDictionaryFactory.dictionary;
     }

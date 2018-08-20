@@ -9,7 +9,7 @@ import java.io.FileNotFoundException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static info.woody.api.intellij.plugin.csct.test.BaseUnitTest.SAMPLE_PROJECT_SRC;
+import static info.woody.api.intellij.plugin.csct.test.BaseUnitTest.SAMPLE_PROJECT_FOLDER;
 import static info.woody.api.intellij.plugin.csct.util.Const.SIGN_HASH;
 
 /**
@@ -21,12 +21,12 @@ public class CodeStyleCheckContextTest {
 
     @Test(expected = FileNotFoundException.class)
     public void noFilesCodeStyleCheckContext() {
-        CodeStyleCheckContext.newInstance(new File(SAMPLE_PROJECT_SRC + "src/test/resources/CodeStyleCheckContextErrorTest.xml"), null);
+        CodeStyleCheckContext.newInstance(new File(SAMPLE_PROJECT_FOLDER + "/src/test/resources/CodeStyleCheckContextErrorTest.xml"), null);
     }
 
     @Test
     public void newInstance$CodeStyleCheckContext() {
-        CodeStyleCheckContext context = CodeStyleCheckContext.newInstance(new File(SAMPLE_PROJECT_SRC + "main/resources/SampleCodeStyleCheckContext.xml"), null);
+        CodeStyleCheckContext context = CodeStyleCheckContext.newInstance(new File(SAMPLE_PROJECT_FOLDER + "/src/main/resources/SampleCodeStyleCheckContext.xml"), null);
         String gitFilesToMerge = Stream.of(
                 "src/main/java/info/woody/api/intellij/plugin/csct/CodeStyleCheckContext.groovy",
                 "src/main/java/info/woody/api/intellij/plugin/csct/CodeStyleCheckRule.groovy",

@@ -8,6 +8,9 @@ public class SimpleClassStructureClazz extends SimpleClassStructureBase {
     private List<SimpleClassStructureImport> importList = new ArrayList<>();
     private List<SimpleClassStructureMethod> methodList = new ArrayList<>();
 
+    /**
+     * Constructor.
+     */
     public SimpleClassStructureClazz() {
         super(SimpleClassStructureType.CLAZZ);
     }

@@ -48,7 +48,8 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                 break
             }
             boolean isDocPattern = line.trim().startsWith("*")
-            if (isDocPattern && line.matches('(?i)^.*created? by ((\\w+)([.]\\w+)*).*$')) { // extract author from comment
+            if (isDocPattern && line.matches('(?i)^.*created? by ((\\w+)([.]\\w+)*).*$')) {
+                // extract author from comment
                 AUTHORS << line.replaceAll('(?i)^.*created? by ((\\w+)([.]\\w+)*).*$', '$1').trim()
             } else if (isDocPattern && line.contains('@author')) { // extract author from documentation
                 AUTHORS << line.replaceAll('(?i)^.*@author ([\\w.]+).*$', '$1').trim()
@@ -100,9 +101,9 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                 checkConstructor(lines, index, line)
             } else if (debug('METHOD') && !trimmedSecureLine.contains(' new ') &&
                     trimmedSecureLine.replaceAll('@\\w+', '').replaceAll('<[^<>]+>', '')
-                    .replaceAll('<[^<>]+>', '').replaceAll('<[^<>]+>', '')
-                    .replaceAll('(\\[|\\])', '').matches('^([\\w]+\\s+)+[\\w$]+\\s*[(][\\w, ]*([)] *[{])?$')
-                    /*secureLine.matches('^(\t| {3,5})((public|protected|private)( ))?[\\w$]+(<[^()]+>)? [\\w$]+[(][^+-=)]*[)]\\s*[{]$')*/) {
+                            .replaceAll('<[^<>]+>', '').replaceAll('<[^<>]+>', '')
+                            .replaceAll('(\\[|\\])', '').matches('^([\\w]+\\s+)+[\\w$]+\\s*[(][\\w, ]*([)] *[{])?$')
+            /*secureLine.matches('^(\t| {3,5})((public|protected|private)( ))?[\\w$]+(<[^()]+>)? [\\w$]+[(][^+-=)]*[)]\\s*[{]$')*/) {
                 checkMethod(content, lines, totalLineCount, index, line, trimmedLine, isTest)
             } else if (trimmedLineLength) {
                 checkOthers(content, lines, totalLineCount, index, line, trimmedLine, trimmedSecureLine, lineLength, isTest)
@@ -146,7 +147,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         if (debug('LITERAL') && !isTest && !trimmedLine.startsWith('@') && !PROD_FILE_NAME.contains('MapperService.') &&
                 !PROD_FILE_NAME.contains('Mapper.') && !trimmedSecureLine.matches('^.*\\b0[.]0\\b.*$') &&
                 !(PROD_FILE_NAME.contains('RequestService') && // exclude the pattern like 'XxxRequestService'
-                PROD_FILE_NAME.endsWith('.groovy')) // request service written by Groovy
+                        PROD_FILE_NAME.endsWith('.groovy')) // request service written by Groovy
         ) {
             if (trimmedLine.matches('(?i)^.+?"([a-z0-9._]+|\\W)".*$') // string pattern only
                     || trimmedSecureLine.replaceAll('\\[\\d+\\]', '') // remove index pattern for list element
@@ -189,11 +190,14 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                         !trimmedLine.contains(' << ') && // Groovy's List.add(e)
                         !lines[index - 1].trim().endsWith('->') && // Groovy's closure
                         !lines[index - 1].trim().contains('<<') && // Groovy's list operation
+                        !lines[index - 1].trim().endsWith('--') && // Groovy's --
                         !lines[index - 1].trim().endsWith('++') && // Groovy's ++
                         !lines[index - 1].trim().endsWith(')') && // Groovy's method invocation
                         (!lines[index - 1].contains(":") && !line.contains(":")) && // Groovy's map
                         !trimmedLine.startsWith(".") && // method of pipeline pattern
                         !trimmedLine.startsWith("if") && // if statement
+                        !trimmedLine.endsWith("++") && // Groovy
+                        !trimmedLine.endsWith("--") && // Groovy
                         !trimmedLine.matches('^(String|int|Map|List|Set)\\b.*$') && // declaration or assignment
                         !line.contains("import ") && !lines[index - 1].contains("import ") && // import statement
                         !line.contains(" = ") && !lines[index - 1].contains(" = ") && // assignment statement
@@ -221,8 +225,9 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
             String contextLines = contextBuilder.toString() // pattern: var.call()
             if (contextLines.matches('^.*[^.@](\\b[a-z]\\w+[.]\\w+[(][^()]*[)]).*\\1.*$')) {
                 String duplicateExpression = contextLines.replaceAll('^.*[^.@](\\b[a-z]\\w+[.]\\w+[(][^()]*[)]).*\\1.*$', '$1')
-                if (line.contains(duplicateExpression) && !duplicateExpression.toLowerCase().contains("random") && !line.contains("->")
-                        && !duplicateExpression.toLowerCase().matches('^.*[.](set|put|stream|append|add).*')) {
+                if (line.contains(duplicateExpression) && !duplicateExpression.toLowerCase().contains("random") && !line.contains("->") &&
+                        !line.startsWith('return')
+                        && !duplicateExpression.toLowerCase().matches('^.*[.](set|put|stream|append|add|parallelStream).*')) {
                     printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_IDENTICAL_EXPRESSIONS, duplicateExpression)
                 }
             }
@@ -283,10 +288,10 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                 printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_IMPROPER_ACRONYM_NAMING)
             }
             if (debug('BAD NAMING') && variableName.matches('^(\\w+(Str(ing)?|Redis)([A-Z]\\w+)?|(str(ing)?|redis)[A-Z]\\w+)$')) {
-                    printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_BAD_VARIABLE_PATTERN)
+                printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_BAD_VARIABLE_PATTERN)
             }
         }
-        if (debug('CATCH CLAUSE') && !isTest && LINE_NUMBER > 8
+        if (debug('CATCH CLAUSE') && !isTest && LINE_NUMBER > 8 && trimmedLine.endsWith('{')
                 && stripStringPattern(lines[index - 1].trim()).split('\\W+').contains('catch') // previous line is catch
                 && (!trimmedSecureLine.matches('^LOGGER[.](error|warn).*[,].*$')
                 && !lines[index + 1].matches('^LOGGER[.](error|warn).*[,].*$'))) {
@@ -319,7 +324,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
             return
         } else if (trimmedLine == "/**") {
             if (nextTrimmedLine == '*' || nextTrimmedLine == '*/' || nextTrimmedLine.startsWith('* @')) {
-                printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_NO_DOCUMENTATION_CONTENT)
+                printWarning(line, LINE_NUMBER + 1, CodeStyleCheckIssues.LINE_NO_DOCUMENTATION_CONTENT)
             }
             String docContent = ''
             int offset = 1
@@ -350,14 +355,14 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                 printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_DOCUMENTATION_REDUNDANT_EMPTY_LINES)
             }
         }
-        if (!SETTINGS.getBadNamingSkipList().any{ trimmedLine.toLowerCase().contains(it.toLowerCase()) } &&
+        if (!SETTINGS.getBadNamingSkipList().any { trimmedLine.toLowerCase().contains(it.toLowerCase()) } &&
                 lineWithoutHtml.replaceAll('[{][^}]+[}]', '').matches('^[*] (@\\w+\\s+\\w+\\s+)?[A-Z][a-z].*[a-z][A-Z].*$') &&
                 !trimmedLine.matches('(?i)^.*created? by.*\\d{1,2}/\\d{1,2}/\\d{4}.*$')) {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_CODE_IN_DOCUMENTATION)
         }
     }
 
-    private void checkClassInterfaceEnum(String[] lines, int index, String line,  String trimmedLine, boolean isTest) {
+    private void checkClassInterfaceEnum(String[] lines, int index, String line, String trimmedLine, boolean isTest) {
         LINE_META.CLASS = true
         String typeName = trimmedLine.replaceAll('^.*(class|interface|enum)\\s+(\\w+).*', '$2')
         if (!isTest && !line.contains("interface") && !line.contains("abstract") && !line.contains("Base") && !line.contains("Const") &&
@@ -408,12 +413,13 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
         String fieldAssignment = "${fieldName} = ${fieldName}"
         String codesAfterConstructor = content.substring(content.indexOf(fieldAssignment) + fieldAssignment.length())
         String codesAfterThisLine = (lines as List).subList(index + 1, lines.size() - 1).join('\n')
+        String capitalizeFieldName = fieldName.capitalize()
         if (debug('UNUSED FIELD') && !['@Mock', '@Spy'].contains(lines[index - 1].trim()) // don't check mocked field
                 && !lines[0].matches('^.*\\b(models?|beans?|pojos?|constants?)\\b.*$')
                 && !trimmedLine.contains(' serialVersionUID ')
                 && !trimmedLine.startsWith("public")
-                && !content.contains('get' + fieldName.capitalize())
-                && !content.contains('set' + fieldName.capitalize())
+                && !content.contains('get' + capitalizeFieldName)
+                && !content.contains('set' + capitalizeFieldName)
                 && (!codesAfterThisLine.matches('(?s)^.*\\b' + fieldName + '\\b.*$') // field never appears after declaration
                 || (content.contains(fieldAssignment) && // field never appears after constructor
                 !codesAfterConstructor.matches('(?s)^.*\\b' + fieldName + '\\b.*$')))) {
@@ -425,7 +431,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
             printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_UNIT_TEST_PRIVATE_FIELD)
         }
         if (debug('REFERENCE FIELD') && !isTest && !line.contains("LOGGER") &&
-            !lines[0].matches('^.*\\b(models?|beans?|pojos?|constants?)\\b.*$')) {
+                !lines[0].matches('^.*\\b(models?|beans?|pojos?|constants?)\\b.*$')) {
             if (PROD_FILE_NAME.contains("Controller.java") && !trimmedLine.startsWith("private")) {
                 printWarning(line, LINE_NUMBER, CodeStyleCheckIssues.LINE_FIELD_MODIFIER_FOR_CONTROLLER)
             } else if (!trimmedLine.startsWith("protected") && !trimmedLine.startsWith("public")) {
@@ -495,7 +501,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
                 int parameterCount = allParameters.length
                 if (parameterCount) {
                     offset = index - 3
-                    while (lines[offset].replace(Character.toString((char)160), ' ').trim().matches('^(/[*])?[*].*$')) {
+                    while (lines[offset].replace(Character.toString((char) 160), ' ').trim().matches('^(/[*])?[*].*$')) {
                         offset--
                         if (offset < 1) {
                             break
@@ -671,7 +677,7 @@ class CodeStyleCheckRuleImpl extends CodeStyleCheckRule {
 // Add action icons
 // identical expression cannot be extracted if it's inside java stream
 // All validators should be a subtype of interface Validator.
-// TODO: 0.0
+// 0.0
 // enhance ENUM COMPARISON
 // TODO: add quick version check
 // 2018.08.AA

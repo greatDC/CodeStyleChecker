@@ -59,5 +59,4 @@ public class CodeStyleCheckConfigurationState {
     public void setBadNamingSkipList(List<String> badNamingSkipList) {
         this.badNamingSkipList = badNamingSkipList;
     }
-
 }

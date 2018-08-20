@@ -14,7 +14,7 @@ public class CodeStyleCheckCommentAndCurlyBraceTest extends BaseUnitTest {
 //    CodeStyleCheckIssues.LINE_GROOVY_PUBLIC_IN_METHOD
     @Test
     public void javaCommentAndCurlyBrace() {
-        rule.GIT_FILES_TO_MERGE = SAMPLE_PROJECT_SRC + "/src/main/groovy/info/woody/api/intellij/plugin/csct/sample/java/comment/SampleJavaCommentAndCurlyBraceIssue.java";
+        rule.GIT_FILES_TO_MERGE = SAMPLE_PROJECT_FOLDER + "/src/main/groovy/info/woody/api/intellij/plugin/csct/sample/java/comment/SampleJavaCommentAndCurlyBraceIssue.java";
         List<String> errors = getLineErrors();
 
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_SINGLE_LINE_COMMENT_FORMAT));

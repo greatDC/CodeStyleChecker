@@ -39,6 +39,7 @@ abstract class CodeStyleCheckRule {
     // Sample: "git diff --name-only HEAD origin/SPRINT_BOEING_727 | grep -e java$ -e groovy$"
     public String GIT_FILES_TO_MERGE = ''
     public CodeStyleCheckConfigurationState SETTINGS
+    public boolean ENABLE_CONSOLE_REPORT = false
     /**
      * Key is file absolute path and value is file detail of {@link Map} type.
      */
@@ -57,7 +58,6 @@ abstract class CodeStyleCheckRule {
     protected int LINE_NUMBER = 0
     protected List AUTHORS
     protected StringBuilder outputBuilder = new StringBuilder(9999)
-    protected boolean ENABLE_CONSOLE_REPORT = false
     protected Map<String, String> CACHED_FILE_CONTENT
 
     /**

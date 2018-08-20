@@ -5,14 +5,9 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
-import info.woody.api.intellij.plugin.csct.syntax.SimpleClassStructureClazz;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.function.BiConsumer;
 
 /**

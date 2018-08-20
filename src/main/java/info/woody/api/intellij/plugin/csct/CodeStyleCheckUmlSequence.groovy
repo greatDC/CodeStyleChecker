@@ -1,6 +1,5 @@
 package info.woody.api.intellij.plugin.csct
 
-import groovy.util.slurpersupport.GPathResult
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 

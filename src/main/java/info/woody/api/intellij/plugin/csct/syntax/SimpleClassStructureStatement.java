@@ -5,6 +5,10 @@ import java.util.List;
 
 public class SimpleClassStructureStatement extends SimpleClassStructureBase {
     private List<SimpleClassStructureStatement> statementList = new ArrayList<>();
+
+    /**
+     * Constructor.
+     */
     public SimpleClassStructureStatement() {
         super(SimpleClassStructureType.METHOD);
     }

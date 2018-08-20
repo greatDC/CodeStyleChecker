@@ -12,7 +12,7 @@ public class CodeStyleCheckFieldTest extends BaseUnitTest {
 
     @Test @Ignore("This test can't be enabled until this check is necessary.")
     public void groovyField() {
-        rule.GIT_FILES_TO_MERGE = SAMPLE_PROJECT_SRC + "/src/main/groovy/info/woody/api/intellij/plugin/csct/sample/groovy/field/SampleGroovyFieldIssueService.groovy";
+        rule.GIT_FILES_TO_MERGE = SAMPLE_PROJECT_FOLDER + "/src/main/groovy/info/woody/api/intellij/plugin/csct/sample/groovy/field/SampleGroovyFieldIssueService.groovy";
         List<String> errors = getLineErrors();
 
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_GROOVY_PUBLIC_IN_FIELD));
@@ -20,7 +20,7 @@ public class CodeStyleCheckFieldTest extends BaseUnitTest {
 
     @Test
     public void javaField() {
-        rule.GIT_FILES_TO_MERGE = SAMPLE_PROJECT_SRC + "/src/main/java/info/woody/api/intellij/plugin/csct/sample/java/field/SampleJavaFieldIssueService.java";
+        rule.GIT_FILES_TO_MERGE = SAMPLE_PROJECT_FOLDER + "/src/main/java/info/woody/api/intellij/plugin/csct/sample/java/field/SampleJavaFieldIssueService.java";
         List<String> errors = getLineErrors();
 
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_UNUSED_FIELD)); // TODO test with more examples

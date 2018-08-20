@@ -17,7 +17,7 @@ public class CodeStyleCheckImportTest extends BaseUnitTest {
 
     @Test
     public void groovyMethod() {
-        rule.GIT_FILES_TO_MERGE = SAMPLE_PROJECT_SRC + "/src/main/groovy/info/woody/api/intellij/plugin/csct/sample/groovy/imports/SampleGroovyImportIssue.groovy";
+        rule.GIT_FILES_TO_MERGE = SAMPLE_PROJECT_FOLDER + "/src/main/groovy/info/woody/api/intellij/plugin/csct/sample/groovy/imports/SampleGroovyImportIssue.groovy";
         List<String> errors = getLineErrors();
 
         Assert.assertTrue(errors.contains(CodeStyleCheckIssues.LINE_IMPORT_ASTERISK));

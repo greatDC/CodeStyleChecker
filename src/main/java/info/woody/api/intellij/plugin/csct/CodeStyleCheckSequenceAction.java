@@ -45,7 +45,6 @@ public class CodeStyleCheckSequenceAction extends AnAction {
         final Project project = anActionEvent.getData(CommonDataKeys.PROJECT);
         final Editor editor = anActionEvent.getData(CommonDataKeys.EDITOR);
 
-
         String name = Thread.currentThread().getName();
         if ("worked".equals(name)) {
             Thread.currentThread().setName("reset");
@@ -56,14 +55,8 @@ public class CodeStyleCheckSequenceAction extends AnAction {
 
         System.out.println(LocalDateTime.now());
         Arrays.stream(ProjectRootManager.getInstance(project).getContentSourceRoots()).forEach(root -> {
-//            try {
-//                System.out.println(new String(Files.readAllBytes(Paths.get(root.getCanonicalPath()))));
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
             System.out.println(root.getCanonicalPath());
         });
-
 
         CaretModel caretModel = editor.getCaretModel();
         Document document = editor.getDocument();
@@ -72,15 +65,6 @@ public class CodeStyleCheckSequenceAction extends AnAction {
         for (int i = 0; i < lineCount; i++) {
 
         }
-
-
-
-
-//        if (caretModel.getLogicalPosition().line % 2 == 0) {
-//
-//        }
-//        anActionEvent.getPresentation().setVisible((project != null && editor != null && caretModel.getCaretCount() > 0));
-        //anActionEvent.getPresentation().setVisible(caretModel.getLogicalPosition().line % 2 == 0);
     }
 
     @Override
