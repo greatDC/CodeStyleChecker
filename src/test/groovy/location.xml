@@ -1,0 +1,358 @@
+<location>
+    <cities>
+    <city name="City">
+        <districts>
+            <district name="District1">
+                <roads>
+                    <road name="Road1a">
+                        <streets>
+                            <street name="Street1ax">
+                                <communities>
+                                    <community name="Community1"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community2"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community3"></community>
+                                </communities>
+                            </street>
+                            <street name="Street2ax">
+                                <communities>
+                                    <community name="Community1"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community2"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community3"></community>
+                                </communities>
+                            </street>
+                            <street name="Street3ax">
+                                <communities>
+                                    <community name="Community1"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community2"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community3"></community>
+                                </communities>
+                            </street>
+                        </streets>
+                    </road>
+                    <road name="Road2a">
+                        <streets>
+                            <street name="Street1ay">
+                                <communities>
+                                    <community name="Community1"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community2"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community3"></community>
+                                </communities>
+                            </street>
+                            <street name="Street2ay">
+                                <communities>
+                                    <community name="Community1"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community2"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community3"></community>
+                                </communities>
+                            </street>
+                            <street name="Street3ay">
+                                <communities>
+                                    <community name="Community1"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community2"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community3"></community>
+                                </communities>
+                            </street>
+                        </streets>
+                    </road>
+                    <road name="Road3a">
+                        <streets>
+                            <street name="Street1az">
+                                <communities>
+                                    <community name="Community1"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community2"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community3"></community>
+                                </communities>
+                            </street>
+                            <street name="Street2az">
+                                <communities>
+                                    <community name="Community1"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community2"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community3"></community>
+                                </communities>
+                            </street>
+                            <street name="Street3az">
+                                <communities>
+                                    <community name="Community1a"></community>
+                                    <community name="Community1b"></community>
+                                    <community name="Community1c"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community2a"></community>
+                                    <community name="Community2b"></community>
+                                    <community name="Community2c"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community3a"></community>
+                                    <community name="Community3b"></community>
+                                    <community name="Community3c"></community>
+                                </communities>
+                            </street>
+                        </streets>
+                    </road>
+                </roads>
+            </district>
+            <district name="District2">
+                <roads>
+                    <road name="Road1b">
+                        <streets>
+                            <street name="Street1bx">
+                                <communities>
+                                    <community name="Community1"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community2"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community3"></community>
+                                </communities>
+                            </street>
+                            <street name="Street2bx">
+                                <communities>
+                                    <community name="Community1"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community2"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community3"></community>
+                                </communities>
+                            </street>
+                            <street name="Street3bx">
+                                <communities>
+                                    <community name="Community1"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community2"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community3"></community>
+                                </communities>
+                            </street>
+                        </streets>
+                    </road>
+                    <road name="Road2b">
+                        <streets>
+                            <street name="Street1by">
+                                <communities>
+                                    <community name="Community1"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community2"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community3"></community>
+                                </communities>
+                            </street>
+                            <street name="Street2by">
+                                <communities>
+                                    <community name="Community1"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community2"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community3"></community>
+                                </communities>
+                            </street>
+                            <street name="Street3by">
+                                <communities>
+                                    <community name="Community1"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community2"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community3"></community>
+                                </communities>
+                            </street>
+                        </streets>
+                    </road>
+                    <road name="Road3b">
+                        <streets>
+                            <street name="Street1bz">
+                                <communities>
+                                    <community name="Community1"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community2"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community3"></community>
+                                </communities>
+                            </street>
+                            <street name="Street2bz">
+                                <communities>
+                                    <community name="Community1"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community2"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community3"></community>
+                                </communities>
+                            </street>
+                            <street name="Street3bz">
+                                <communities>
+                                    <community name="Community1"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community2"></community>
+                                </communities>
+                                <communities>
+                                    <community name="Community3"></community>
+                                </communities>
+                            </street>
+                        </streets>
+                    </road>
+                </roads>
+            </district>
+            <district name="District3">
+            <roads>
+                <road name="Road1c">
+                    <streets>
+                        <street name="Street1">
+                            <communities>
+                                <community name="Community1"></community>
+                            </communities>
+                            <communities>
+                                <community name="Community2"></community>
+                            </communities>
+                            <communities>
+                                <community name="Community3"></community>
+                            </communities>
+                        </street>
+                        <street name="Street2">
+                            <communities>
+                                <community name="Community1"></community>
+                            </communities>
+                            <communities>
+                                <community name="Community2"></community>
+                            </communities>
+                            <communities>
+                                <community name="Community3"></community>
+                            </communities>
+                        </street>
+                        <street name="Street3">
+                            <communities>
+                                <community name="Community1"></community>
+                            </communities>
+                            <communities>
+                                <community name="Community2"></community>
+                            </communities>
+                            <communities>
+                                <community name="Community3"></community>
+                            </communities>
+                        </street>
+                    </streets>
+                </road>
+                <road name="Road2c">
+                    <streets>
+                        <street name="Street1">
+                            <communities>
+                                <community name="Community1"></community>
+                            </communities>
+                            <communities>
+                                <community name="Community2"></community>
+                            </communities>
+                            <communities>
+                                <community name="Community3"></community>
+                            </communities>
+                        </street>
+                        <street name="Street2">
+                            <communities>
+                                <community name="Community1"></community>
+                            </communities>
+                            <communities>
+                                <community name="Community2"></community>
+                            </communities>
+                            <communities>
+                                <community name="Community3"></community>
+                            </communities>
+                        </street>
+                        <street name="Street3">
+                            <communities>
+                                <community name="Community1"></community>
+                            </communities>
+                            <communities>
+                                <community name="Community2"></community>
+                            </communities>
+                            <communities>
+                                <community name="Community3"></community>
+                            </communities>
+                        </street>
+                    </streets>
+                </road>
+                <road name="Road3c">
+                    <streets>
+                        <street name="Street1">
+                            <communities>
+                                <community name="Community1"></community>
+                            </communities>
+                            <communities>
+                                <community name="Community2"></community>
+                            </communities>
+                            <communities>
+                                <community name="Community3"></community>
+                            </communities>
+                        </street>
+                        <street name="Street2">
+                            <communities>
+                                <community name="Community1"></community>
+                            </communities>
+                            <communities>
+                                <community name="Community2"></community>
+                            </communities>
+                            <communities>
+                                <community name="Community3"></community>
+                            </communities>
+                        </street>
+                        <street name="Street3">
+                            <communities>
+                                <community name="Community1"></community>
+                            </communities>
+                            <communities>
+                                <community name="Community2"></community>
+                            </communities>
+                            <communities>
+                                <community name="Community3"></community>
+                            </communities>
+                        </street>
+                    </streets>
+                </road>
+            </roads>
+        </district>
+        </districts>
+    </city></cities>
+</location>
